@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
 
 export function WordList({ words }) {
+  const reduced = usePrefersReducedMotion();
   const total = words.reduce((s, w) => s + w.score, 0);
   return (
     <section className="bg-surface rounded-2xl p-4 w-full" aria-label="Mots trouvés">
@@ -16,8 +18,8 @@ export function WordList({ words }) {
             {words.map((w, i) => (
               <motion.li
                 key={`${w.word}-${i}`}
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={reduced ? { opacity: 0 } : { opacity: 0, y: -4 }}
+                animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 className="flex justify-between py-1 font-body"
               >

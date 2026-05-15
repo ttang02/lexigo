@@ -1,3 +1,5 @@
+import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
+
 function format(ms) {
   const s = Math.ceil(ms / 1000);
   const m = Math.floor(s / 60);
@@ -6,11 +8,12 @@ function format(ms) {
 }
 
 export function Timer({ remainingMs, totalMs }) {
+  const reduced = usePrefersReducedMotion();
   const danger = remainingMs <= 10_000;
   const pct = Math.max(0, Math.min(100, (remainingMs / totalMs) * 100));
   return (
     <div className="w-full">
-      <div className={`tabular text-3xl font-display font-bold ${danger ? "text-danger animate-pulse" : "text-text-base"}`}>
+      <div className={`tabular text-3xl font-display font-bold ${danger ? "text-danger" : "text-text-base"} ${danger && !reduced ? "animate-pulse" : ""}`}>
         {format(remainingMs)}
       </div>
       <div className="h-1 bg-surface rounded-full mt-1 overflow-hidden">

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
 
 const BONUS_LABEL = {
   DL: "double letter",
@@ -14,6 +15,7 @@ const BONUS_BG = {
 };
 
 export function Tile({ letter, bonus, index, selected, onTap }) {
+  const reduced = usePrefersReducedMotion();
   const ariaLabel = `Letter ${letter}${bonus ? `, ${BONUS_LABEL[bonus]} bonus` : ""}`;
   return (
     <motion.button
@@ -21,9 +23,9 @@ export function Tile({ letter, bonus, index, selected, onTap }) {
       onClick={() => onTap(index)}
       aria-label={ariaLabel}
       aria-pressed={selected}
-      whileTap={{ scale: 0.95 }}
-      whileHover={{ scale: 1.05 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      whileTap={reduced ? {} : { scale: 0.95 }}
+      whileHover={reduced ? {} : { scale: 1.05 }}
+      transition={reduced ? { duration: 0.08 } : { type: "spring", stiffness: 300, damping: 20 }}
       className={[
         "relative aspect-square rounded-tile font-display font-bold text-3xl md:text-4xl",
         "flex items-center justify-center select-none",
