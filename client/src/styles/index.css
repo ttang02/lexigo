@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body { font-feature-settings: "tnum" 0; }
+  .tabular { font-variant-numeric: tabular-nums; }
+}
