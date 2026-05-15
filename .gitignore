@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+server/data/scores.sqlite
+server/data/scores.sqlite-journal
+server/data/dict.txt
+.DS_Store
+.vscode/
+.idea/
