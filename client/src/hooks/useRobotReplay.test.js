@@ -33,33 +33,33 @@ describe("useRobotReplay", () => {
     expect(result.current.activeIndices.size).toBe(0);
   });
 
-  it("after 40ms, first tile of first word is active", () => {
+  it("after 120ms, first tile of first word is active", () => {
     const { result } = renderHook(() => useRobotReplay({ solutions: SOLUTIONS }));
     act(() => result.current.play());
-    act(() => { vi.advanceTimersByTime(40); });
+    act(() => { vi.advanceTimersByTime(120); });
     expect(result.current.activeIndices.has(0)).toBe(true);
     expect(result.current.currentEntry?.word).toBe("AB");
   });
 
-  it("after 80ms, both tiles of first word are active", () => {
+  it("after 240ms, both tiles of first word are active", () => {
     const { result } = renderHook(() => useRobotReplay({ solutions: SOLUTIONS }));
     act(() => result.current.play());
-    act(() => { vi.advanceTimersByTime(80); });
+    act(() => { vi.advanceTimersByTime(240); });
     expect(result.current.activeIndices.has(0)).toBe(true);
     expect(result.current.activeIndices.has(1)).toBe(true);
   });
 
-  it("after first word completes (80+100+160+40=380ms), moves to second word", () => {
+  it("after first word completes (240+600+300+150=1290ms), moves to second word", () => {
     const { result } = renderHook(() => useRobotReplay({ solutions: SOLUTIONS }));
     act(() => result.current.play());
-    act(() => { vi.advanceTimersByTime(380); });
+    act(() => { vi.advanceTimersByTime(1290); });
     expect(result.current.currentEntry?.word).toBe("CD");
   });
 
   it("done after all words finish", () => {
     const { result } = renderHook(() => useRobotReplay({ solutions: SOLUTIONS }));
     act(() => result.current.play());
-    act(() => { vi.advanceTimersByTime(800); });
+    act(() => { vi.advanceTimersByTime(2600); });
     expect(result.current.done).toBe(true);
     expect(result.current.activeIndices.size).toBe(0);
   });

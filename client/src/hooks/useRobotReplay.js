@@ -1,11 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { usePrefersReducedMotion } from "./usePrefersReducedMotion.js";
 
-const STAGGER_MS = 40;
-const HOLD_MS = 100;
-const CLEAR_MS = 160;
-const GAP_MS = 40;
-const REDUCED_HOLD_MS = 300;
+const STAGGER_MS = 120;
+const HOLD_MS = 600;
+const CLEAR_MS = 300;
+const GAP_MS = 150;
+const REDUCED_HOLD_MS = 800;
 
 export function useRobotReplay({ solutions }) {
   const [activeIndices, setActiveIndices] = useState(new Set());
