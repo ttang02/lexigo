@@ -31,3 +31,8 @@ export async function fetchLeaderboard(limit = 20) {
   const r = await fetch(`/api/scores?limit=${limit}`);
   return json(r);
 }
+
+export async function fetchSolution(gridId) {
+  const r = await fetch(`/api/solve?gridId=${encodeURIComponent(gridId)}`);
+  return json(r);
+}
