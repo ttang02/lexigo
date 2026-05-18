@@ -1,4 +1,3 @@
-const ROWS = 4;
 const COLS = 4;
 
 function rc(i) { return { r: Math.floor(i / COLS), c: i % COLS }; }
