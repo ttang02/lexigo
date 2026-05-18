@@ -1,14 +1,44 @@
+import { motion } from "framer-motion";
+import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
+
+const container = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } },
+};
+
 export function Menu({ onPlay, onLeaderboard }) {
+  const reduced = usePrefersReducedMotion();
   return (
-    <section className="flex flex-col items-center gap-6 max-w-md mx-auto">
-      <h1 className="font-display font-bold text-5xl md:text-6xl text-accent">Ruzzle FR</h1>
-      <p className="text-text-muted text-center">Trouve un maximum de mots en 2 minutes.</p>
-      <button onClick={onPlay} className="bg-primary text-bg font-display font-bold px-8 py-3 rounded-xl text-lg">
+    <motion.section
+      className="flex flex-col items-center gap-6 max-w-md mx-auto"
+      variants={reduced ? undefined : container}
+      initial={reduced ? false : "hidden"}
+      animate="visible"
+    >
+      <motion.h1 variants={reduced ? undefined : item} className="font-display font-bold text-5xl md:text-6xl text-accent">
+        Ruzzle FR
+      </motion.h1>
+      <motion.p variants={reduced ? undefined : item} className="text-text-muted text-center">
+        Trouve un maximum de mots en 2 minutes.
+      </motion.p>
+      <motion.button
+        variants={reduced ? undefined : item}
+        onClick={onPlay}
+        className="bg-primary text-bg font-display font-bold px-8 py-3 rounded-xl text-lg"
+      >
         Jouer
-      </button>
-      <button onClick={onLeaderboard} className="text-text-muted underline">
+      </motion.button>
+      <motion.button
+        variants={reduced ? undefined : item}
+        onClick={onLeaderboard}
+        className="text-text-muted underline"
+      >
         Voir le classement
-      </button>
-    </section>
+      </motion.button>
+    </motion.section>
   );
 }

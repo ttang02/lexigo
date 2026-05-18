@@ -14,6 +14,17 @@ const BONUS_BG = {
   TW: "bg-bonus-tw",
 };
 
+const SPRING = { type: "spring", stiffness: 300, damping: 20 };
+
+export const tileVariants = {
+  hidden: { opacity: 0, scale: 0.85 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
 export function Tile({ letter, bonus, index, selected, onTap }) {
   const reduced = usePrefersReducedMotion();
   const ariaLabel = `Letter ${letter}${bonus ? `, ${BONUS_LABEL[bonus]} bonus` : ""}`;
@@ -23,9 +34,9 @@ export function Tile({ letter, bonus, index, selected, onTap }) {
       onClick={() => onTap(index)}
       aria-label={ariaLabel}
       aria-pressed={selected}
-      whileTap={reduced ? {} : { scale: 0.95 }}
-      whileHover={reduced ? {} : { scale: 1.05 }}
-      transition={reduced ? { duration: 0.08 } : { type: "spring", stiffness: 300, damping: 20 }}
+      variants={reduced ? undefined : tileVariants}
+      whileTap={reduced ? {} : { scale: 0.95, transition: SPRING }}
+      whileHover={reduced ? {} : { scale: 1.05, transition: SPRING }}
       className={[
         "relative aspect-square rounded-tile font-display font-bold text-3xl md:text-4xl",
         "flex items-center justify-center select-none",

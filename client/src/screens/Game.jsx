@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Grid } from "../components/Grid.jsx";
 import { Timer } from "../components/Timer.jsx";
 import { WordList } from "../components/WordList.jsx";
@@ -57,10 +58,23 @@ export function Game({ onEnd }) {
           <button onClick={reset} className="bg-surface px-6 py-2 rounded-lg">Effacer</button>
         </div>
         <p role="status" aria-live="polite" className="text-center text-sm h-5">
-          {feedback?.type === "ok" && <span className="text-success">{feedback.word} +{feedback.score}</span>}
-          {feedback?.type === "no" && <span className="text-danger">{feedback.word} — pas dans le dico</span>}
-          {feedback?.type === "dup" && <span className="text-text-muted">{feedback.word} — déjà trouvé</span>}
-          {feedback?.type === "err" && <span className="text-danger">{feedback.message}</span>}
+          <AnimatePresence mode="wait">
+            {feedback && (
+              <motion.span
+                key={`${feedback.type}-${feedback.word ?? ""}`}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="inline-block"
+              >
+                {feedback.type === "ok" && <span className="text-success">{feedback.word} +{feedback.score}</span>}
+                {feedback.type === "no" && <span className="text-danger">{feedback.word} — pas dans le dico</span>}
+                {feedback.type === "dup" && <span className="text-text-muted">{feedback.word} — déjà trouvé</span>}
+                {feedback.type === "err" && <span className="text-danger">{feedback.message}</span>}
+              </motion.span>
+            )}
+          </AnimatePresence>
         </p>
       </div>
       <WordList words={words} />
