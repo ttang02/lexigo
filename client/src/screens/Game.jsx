@@ -16,7 +16,7 @@ export function Game({ onEnd }) {
   const { path, tap, reset } = usePathSelection();
   const { remainingMs, running, start } = useTimer({
     durationMs: DURATION,
-    onEnd: () => onEnd({ words, total: words.reduce((s, w) => s + w.score, 0) }),
+    onEnd: () => onEnd({ words, total: words.reduce((s, w) => s + w.score, 0), gridId: grid?.gridId, cells: grid?.cells }),
   });
 
   useEffect(() => { fetchGrid().then(setGrid); }, []);
