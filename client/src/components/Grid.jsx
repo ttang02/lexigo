@@ -7,9 +7,10 @@ const gridVariants = {
   visible: { transition: { staggerChildren: 0.018 } },
 };
 
-export function Grid({ cells, path, onTap }) {
+export function Grid({ cells, path, robotPath = [], onTap }) {
   const reduced = usePrefersReducedMotion();
   const selected = new Set(path);
+  const robotSelected = new Set(robotPath);
   return (
     <motion.div
       className="grid grid-cols-4 gap-2 w-full max-w-[480px] aspect-square mx-auto p-2 rounded-2xl bg-surface/40"
@@ -26,6 +27,7 @@ export function Grid({ cells, path, onTap }) {
           bonus={c.bonus}
           index={i}
           selected={selected.has(i)}
+          robotSelected={robotSelected.has(i)}
           onTap={onTap}
         />
       ))}

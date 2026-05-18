@@ -21,4 +21,12 @@ describe("Grid", () => {
     expect(screen.getAllByRole("button")[0]).toHaveAttribute("aria-pressed", "true");
     expect(screen.getAllByRole("button")[2]).toHaveAttribute("aria-pressed", "false");
   });
+  it("passes robotSelected to correct tiles", () => {
+    const cells = Array.from({ length: 16 }, (_, i) => ({ letter: String.fromCharCode(65 + i % 26), bonus: null }));
+    render(<Grid cells={cells} path={[]} robotPath={[2, 5]} onTap={() => {}} />);
+    const buttons = screen.getAllByRole("button");
+    expect(buttons[2].className).toMatch(/amber/);
+    expect(buttons[5].className).toMatch(/amber/);
+    expect(buttons[0].className).not.toMatch(/amber/);
+  });
 });
