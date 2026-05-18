@@ -1,56 +1,54 @@
-export function solve({ cells, trie }) {
-  const solutions = [];
-  const visited = new Set();
+import { computeScore } from "./score.js";
 
-  function dfs(index, currentWord, path) {
-    if (currentWord.length > 0 && trie.hasWord(currentWord)) {
-      const key = currentWord + ":" + path.join(",");
-      if (!visited.has(key)) {
-        visited.add(key);
-        solutions.push({
-          word: currentWord,
-          path: [...path],
-          score: computePathScore(path, cells),
-        });
-      }
-    }
+const COLS = 4;
+const ROWS = 4;
 
-    if (currentWord.length >= 12) return; // max word length
-
-    const row = Math.floor(index / 4);
-    const col = index % 4;
-
-    for (let dr = -1; dr <= 1; dr++) {
-      for (let dc = -1; dc <= 1; dc++) {
-        if (dr === 0 && dc === 0) continue;
-        const nr = row + dr;
-        const nc = col + dc;
-        if (nr < 0 || nr >= 4 || nc < 0 || nc >= 4) continue;
-        const nextIndex = nr * 4 + nc;
-        if (!path.includes(nextIndex)) {
-          const nextLetter = cells[nextIndex].letter;
-          dfs(nextIndex, currentWord + nextLetter, [...path, nextIndex]);
-        }
+function neighbors(idx) {
+  const r = Math.floor(idx / COLS);
+  const c = idx % COLS;
+  const result = [];
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const nr = r + dr;
+      const nc = c + dc;
+      if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+        result.push(nr * COLS + nc);
       }
     }
   }
-
-  // Start from each cell
-  for (let i = 0; i < cells.length; i++) {
-    const letter = cells[i].letter;
-    dfs(i, letter, [i]);
-  }
-
-  return solutions;
+  return result;
 }
 
-function computePathScore(path, cells) {
-  let score = 0;
-  for (const idx of path) {
-    const cell = cells[idx];
-    score += 1;
-    if (cell.bonus === "double") score += 1;
-    if (cell.bonus === "triple") score += 2;
+export function solve({ cells, trie }) {
+  const best = new Map(); // word → { path, score }
+
+  function dfs(idx, path, visited, word) {
+    if (!trie.hasPrefix(word)) return;
+    if (word.length >= 2 && trie.hasWord(word)) {
+      const score = computeScore({ path, cells });
+      const existing = best.get(word);
+      if (!existing || score > existing.score) {
+        best.set(word, { path: [...path], score });
+      }
+    }
+    for (const next of neighbors(idx)) {
+      if (!visited.has(next)) {
+        visited.add(next);
+        path.push(next);
+        dfs(next, path, visited, word + cells[next].letter);
+        path.pop();
+        visited.delete(next);
+      }
+    }
   }
-  return score;
+
+  for (let i = 0; i < cells.length; i++) {
+    const visited = new Set([i]);
+    dfs(i, [i], visited, cells[i].letter);
+  }
+
+  return Array.from(best.entries())
+    .map(([word, { path, score }]) => ({ word, path, score }))
+    .sort((a, b) => b.score - a.score);
 }

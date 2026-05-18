@@ -23,4 +23,9 @@ describe("Tile", () => {
     expect(screen.getByRole("button").getAttribute("aria-label")).toMatch(/A/);
     expect(screen.getByRole("button").getAttribute("aria-label")).toMatch(/triple.*word/i);
   });
+  it("shows gold ring when robotSelected", () => {
+    render(<Tile letter="A" bonus={null} index={0} selected={false} robotSelected={true} onTap={() => {}} />);
+    const btn = screen.getByRole("button");
+    expect(btn.className).toMatch(/amber/);
+  });
 });

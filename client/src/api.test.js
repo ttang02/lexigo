@@ -30,4 +30,14 @@ describe("api", () => {
     fetch.mockResolvedValue({ ok: false, status: 400, json: async () => ({ error: "bad" }) });
     await expect(api.fetchGrid()).rejects.toThrow(/bad/);
   });
+  it("fetchSolution GETs /api/solve with gridId", async () => {
+    fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ solutions: [{ word: "CHAT", path: [0,1,2,3], score: 10 }] }),
+    });
+    const r = await api.fetchSolution("abc-123");
+    expect(fetch).toHaveBeenCalledWith("/api/solve?gridId=abc-123");
+    expect(r.solutions).toHaveLength(1);
+    expect(r.solutions[0].word).toBe("CHAT");
+  });
 });

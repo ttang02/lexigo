@@ -12,6 +12,14 @@ export function buildApp({ trie, db, cache, normalize }) {
   app.use(cors());
   app.use(express.json({ limit: "16kb" }));
 
+  app.get("/api/solve", (req, res) => {
+    const { gridId } = req.query;
+    const cells = cache.get(gridId);
+    if (!cells) return res.status(400).json({ error: "grid expired or unknown", code: "GRID_MISSING" });
+    const solutions = solve({ cells, trie });
+    res.json({ solutions });
+  });
+
   app.get("/api/grid", (_req, res) => {
     const grid = generateGrid();
     cache.set(grid.gridId, grid.cells);

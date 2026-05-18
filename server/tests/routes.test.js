@@ -84,8 +84,6 @@ describe("POST /api/scores + GET /api/scores", () => {
 describe("GET /api/solve", () => {
   it("returns solutions array for a known grid", async () => {
     const { app, cache } = makeApp();
-    // Insert a word that's reachable: CHAT (C→H→A→T at positions 0-3)
-    // makeApp() trie already has CHAT
     cache.set("solve-id", [
       { letter: "C", bonus: null }, { letter: "H", bonus: null },
       { letter: "A", bonus: null }, { letter: "T", bonus: null },
