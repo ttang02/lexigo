@@ -21,13 +21,13 @@ export function RobotReplay({ gridId, cells, onDone }) {
     if (solutions === null) return;
     if (solutions.length === 0) return;
     play();
-  }, [solutions]);
+  }, [solutions, play]);
 
   useEffect(() => {
     if (!done) return;
     const t = setTimeout(onDone, 800);
     return () => clearTimeout(t);
-  }, [done]);
+  }, [done, onDone]);
 
   if (error) {
     return (

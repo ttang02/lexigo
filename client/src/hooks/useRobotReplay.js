@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { usePrefersReducedMotion } from "./usePrefersReducedMotion.js";
 
 const STAGGER_MS = 40;
@@ -17,6 +17,7 @@ export function useRobotReplay({ solutions }) {
 
   const timerRef = useRef(null);
   const stateRef = useRef({ wordIndex: 0, stepIndex: 0, running: false });
+  const runStepRef = useRef(null);
 
   function clearTimer() {
     if (timerRef.current) {
@@ -49,39 +50,39 @@ export function useRobotReplay({ solutions }) {
         timerRef.current = setTimeout(() => {
           stateRef.current.wordIndex += 1;
           stateRef.current.stepIndex = 0;
-          runStep();
+          runStepRef.current?.();
         }, GAP_MS);
       }, REDUCED_HOLD_MS);
       return;
     }
 
     if (si < path.length) {
-      // Reveal tile si
       timerRef.current = setTimeout(() => {
         setActiveIndices((prev) => new Set([...prev, path[si]]));
         stateRef.current.stepIndex += 1;
-        runStep();
+        runStepRef.current?.();
       }, STAGGER_MS);
     } else if (si === path.length) {
-      // Hold
       timerRef.current = setTimeout(() => {
         stateRef.current.stepIndex += 1;
-        runStep();
+        runStepRef.current?.();
       }, HOLD_MS);
     } else {
-      // Clear and advance to next word
       timerRef.current = setTimeout(() => {
         setActiveIndices(new Set());
         timerRef.current = setTimeout(() => {
           stateRef.current.wordIndex += 1;
           stateRef.current.stepIndex = 0;
-          runStep();
+          runStepRef.current?.();
         }, GAP_MS);
       }, CLEAR_MS);
     }
   }, [solutions, reduced]);
 
-  function play() {
+  // Keep ref pointing to latest runStep so recursive calls always use current version
+  useEffect(() => { runStepRef.current = runStep; }, [runStep]);
+
+  const play = useCallback(() => {
     clearTimer();
     stateRef.current = { wordIndex: 0, stepIndex: 0, running: true };
     setDone(false);
@@ -90,7 +91,7 @@ export function useRobotReplay({ solutions }) {
     setCurrentEntry(solutions.length > 0 ? solutions[0] : null);
     setWordIndex(0);
     runStep();
-  }
+  }, [solutions, runStep]);
 
   function skip() {
     clearTimer();
