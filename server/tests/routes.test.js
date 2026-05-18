@@ -80,3 +80,36 @@ describe("POST /api/scores + GET /api/scores", () => {
     expect(r.status).toBe(400);
   });
 });
+
+describe("GET /api/solve", () => {
+  it("returns solutions array for a known grid", async () => {
+    const { app, cache } = makeApp();
+    cache.set("solve-id", [
+      { letter: "C", bonus: null }, { letter: "H", bonus: null },
+      { letter: "A", bonus: null }, { letter: "T", bonus: null },
+      { letter: "X", bonus: null }, { letter: "X", bonus: null },
+      { letter: "X", bonus: null }, { letter: "X", bonus: null },
+      { letter: "X", bonus: null }, { letter: "X", bonus: null },
+      { letter: "X", bonus: null }, { letter: "X", bonus: null },
+      { letter: "X", bonus: null }, { letter: "X", bonus: null },
+      { letter: "X", bonus: null }, { letter: "X", bonus: null },
+    ]);
+    const res = await request(app).get("/api/solve?gridId=solve-id");
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.solutions)).toBe(true);
+    const words = res.body.solutions.map((s) => s.word);
+    expect(words).toContain("CHAT");
+    res.body.solutions.forEach((s) => {
+      expect(typeof s.word).toBe("string");
+      expect(Array.isArray(s.path)).toBe(true);
+      expect(typeof s.score).toBe("number");
+    });
+  });
+
+  it("returns 400 GRID_MISSING for unknown gridId", async () => {
+    const { app } = makeApp();
+    const res = await request(app).get("/api/solve?gridId=unknown");
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("GRID_MISSING");
+  });
+});

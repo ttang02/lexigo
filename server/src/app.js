@@ -3,6 +3,7 @@ import cors from "cors";
 import { generateGrid } from "./grid.js";
 import { isPathValid, wordFromPath } from "./validate.js";
 import { computeScore } from "./score.js";
+import { solve } from "./solver.js";
 
 const PSEUDO_RE = /^[A-Za-z0-9_\- ]{1,20}$/;
 
@@ -10,6 +11,14 @@ export function buildApp({ trie, db, cache, normalize }) {
   const app = express();
   app.use(cors());
   app.use(express.json({ limit: "16kb" }));
+
+  app.get("/api/solve", (req, res) => {
+    const { gridId } = req.query;
+    const cells = cache.get(gridId);
+    if (!cells) return res.status(400).json({ error: "grid expired or unknown", code: "GRID_MISSING" });
+    const solutions = solve({ cells, trie });
+    res.json({ solutions });
+  });
 
   app.get("/api/grid", (_req, res) => {
     const grid = generateGrid();
