@@ -23,9 +23,17 @@ describe("Tile", () => {
     expect(screen.getByRole("button").getAttribute("aria-label")).toMatch(/A/);
     expect(screen.getByRole("button").getAttribute("aria-label")).toMatch(/triple.*word/i);
   });
-  it("shows gold ring when robotSelected", () => {
-    render(<Tile letter="A" bonus={null} index={0} selected={false} robotSelected={true} onTap={() => {}} />);
-    const btn = screen.getByRole("button");
-    expect(btn.className).toMatch(/amber/);
+  it("shows amber class when robotTrailOpacity > 0", () => {
+    render(<Tile letter="A" bonus={null} index={0} selected={false} robotTrailOpacity={1} onTap={() => {}} />);
+    expect(screen.getByRole("button").className).toMatch(/amber/);
+  });
+  it("shows success class when flashing", () => {
+    render(<Tile letter="A" bonus={null} index={0} selected={false} flashing={true} onTap={() => {}} />);
+    expect(screen.getByRole("button").className).toMatch(/success/);
+  });
+  it("shows normal class when robotTrailOpacity is 0 and not flashing", () => {
+    render(<Tile letter="A" bonus={null} index={0} selected={false} robotTrailOpacity={0} onTap={() => {}} />);
+    expect(screen.getByRole("button").className).not.toMatch(/amber/);
+    expect(screen.getByRole("button").className).not.toMatch(/success/);
   });
 });
