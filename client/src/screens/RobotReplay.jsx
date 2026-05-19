@@ -4,36 +4,44 @@ import { Grid } from "../components/Grid.jsx";
 import { fetchSolution } from "../api.js";
 import { useRobotReplay } from "../hooks/useRobotReplay.js";
 
-function SolutionList({ solutions, wordIndex, done }) {
-  const activeRef = useRef(null);
+function SolutionList({ solutions, done }) {
+  const listRef = useRef(null);
 
   useEffect(() => {
-    activeRef.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
-  }, [wordIndex]);
+    listRef.current?.lastElementChild?.scrollIntoView?.({
+      block: "nearest",
+      behavior: "smooth",
+    });
+  }, [solutions.length]);
 
   return (
-    <div className="flex flex-col gap-1 overflow-y-auto max-h-[480px] pr-1">
-      {solutions.map((s, i) => {
-        const isActive = !done && i === wordIndex;
-        const isPast = done || i < wordIndex;
-        return (
-          <div
-            key={s.word}
-            ref={isActive ? activeRef : null}
-            className={[
-              "flex justify-between items-center px-3 py-1.5 rounded-lg text-sm transition-colors duration-200",
-              isActive
-                ? "bg-amber-400/20 text-amber-400 font-bold"
-                : isPast
-                ? "text-text-muted"
-                : "text-text-base",
-            ].join(" ")}
-          >
-            <span className="font-display">{s.word}</span>
-            <span className="tabular-nums text-xs">{isPast || isActive ? `+${s.score}` : ""}</span>
-          </div>
-        );
-      })}
+    <div
+      ref={listRef}
+      className="flex flex-col gap-1 overflow-y-auto max-h-[480px] pr-1"
+    >
+      <AnimatePresence>
+        {solutions.map((s, i) => {
+          const isActive = !done && i === solutions.length - 1;
+          return (
+            <motion.div
+              key={s.word}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              className={[
+                "flex justify-between items-center px-3 py-1.5 rounded-lg text-sm",
+                isActive
+                  ? "bg-amber-400/20 text-amber-400 font-bold"
+                  : "text-text-muted",
+              ].join(" ")}
+            >
+              <span className="font-display">{s.word}</span>
+              <span className="tabular-nums text-xs">+{s.score}</span>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 }
@@ -42,8 +50,16 @@ export function RobotReplay({ gridId, cells, onDone }) {
   const [solutions, setSolutions] = useState(null);
   const [error, setError] = useState(null);
 
-  const { play, skip, activeIndices, currentEntry, wordIndex, total, done } =
-    useRobotReplay({ solutions: solutions ?? [] });
+  const {
+    play,
+    skip,
+    stepIndex,
+    isHolding,
+    currentEntry,
+    wordIndex,
+    total,
+    done,
+  } = useRobotReplay({ solutions: solutions ?? [] });
 
   useEffect(() => {
     fetchSolution(gridId)
@@ -82,6 +98,8 @@ export function RobotReplay({ gridId, cells, onDone }) {
     return <p className="text-center text-text-muted">Aucun mot valide trouvé.</p>;
   }
 
+  const revealedSolutions = done ? solutions : solutions.slice(0, wordIndex + 1);
+
   return (
     <section className="grid gap-4 lg:grid-cols-[1fr_260px] max-w-5xl mx-auto">
       <div className="flex flex-col gap-3">
@@ -98,7 +116,9 @@ export function RobotReplay({ gridId, cells, onDone }) {
         <Grid
           cells={cells}
           path={[]}
-          robotPath={[...activeIndices]}
+          robotPath={currentEntry?.path ?? []}
+          stepIndex={stepIndex}
+          isHolding={isHolding}
           onTap={() => {}}
         />
 
@@ -127,7 +147,7 @@ export function RobotReplay({ gridId, cells, onDone }) {
         <h3 className="font-display font-bold text-sm text-text-muted uppercase tracking-wide">
           Mots trouvés
         </h3>
-        <SolutionList solutions={solutions} wordIndex={wordIndex} done={done} />
+        <SolutionList solutions={revealedSolutions} done={done} />
       </div>
     </section>
   );

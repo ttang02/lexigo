@@ -60,4 +60,18 @@ describe("RobotReplay", () => {
     });
     expect(screen.getByText(/aucun mot/i)).toBeInTheDocument();
   });
+
+  it("shows only revealed words in solution list initially (progressive reveal)", async () => {
+    api.fetchSolution.mockResolvedValue({
+      solutions: [
+        { word: "AB", path: [0, 1], score: 5 },
+        { word: "CD", path: [2, 3], score: 3 },
+      ],
+    });
+    await act(async () => {
+      render(<RobotReplay gridId="g1" cells={CELLS} onDone={() => {}} />);
+    });
+    // wordIndex = 0 → revealedSolutions = [AB] only
+    expect(screen.queryByText("CD")).not.toBeInTheDocument();
+  });
 });
