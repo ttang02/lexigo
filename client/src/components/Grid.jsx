@@ -67,6 +67,7 @@ export function Grid({
       })}
       {path.length >= 2 && !reduced && (
         <svg
+          aria-hidden="true"
           className="absolute inset-0 w-full h-full pointer-events-none"
           viewBox="0 0 480 480"
           preserveAspectRatio="xMidYMid meet"

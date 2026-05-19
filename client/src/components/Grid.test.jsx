@@ -69,6 +69,7 @@ describe("Grid", () => {
     expect(buttons[1].className).not.toMatch(/success/);
   });
 
+  // polyline only renders when !reduced; matchMedia stub in test-setup returns false (motion allowed)
   it("renders SVG polyline when path has 2 or more tiles", () => {
     render(<Grid cells={cells} path={[0, 1, 2]} onTap={() => {}} />);
     expect(document.querySelector("polyline")).toBeInTheDocument();
