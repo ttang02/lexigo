@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
+import { RuzzleLogo } from "../components/RuzzleLogo.jsx";
 
 const container = {
   hidden: {},
@@ -19,9 +20,15 @@ export function Menu({ onPlay, onLeaderboard }) {
       initial={reduced ? false : "hidden"}
       animate="visible"
     >
-      <motion.h1 variants={reduced ? undefined : item} className="font-display font-bold text-5xl md:text-6xl text-accent">
-        Ruzzle FR
-      </motion.h1>
+      <motion.div variants={reduced ? undefined : item}>
+        <RuzzleLogo />
+      </motion.div>
+      <motion.p
+        variants={reduced ? undefined : item}
+        className="text-text-muted text-sm tracking-widest uppercase"
+      >
+        FR
+      </motion.p>
       <motion.p variants={reduced ? undefined : item} className="text-text-muted text-center">
         Trouve un maximum de mots en 2 minutes.
       </motion.p>
