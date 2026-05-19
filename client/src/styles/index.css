@@ -4,7 +4,11 @@
 
 @layer base {
   html { -webkit-font-smoothing: antialiased; }
-  body { font-feature-settings: "tnum" 0; }
+  body {
+    font-feature-settings: "tnum" 0;
+    background: radial-gradient(ellipse 120% 60% at 50% -5%, #4A259A 0%, #201258 50%, #100A30 100%);
+    background-attachment: fixed;
+  }
   .tabular { font-variant-numeric: tabular-nums; }
 }
 

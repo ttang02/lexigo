@@ -26,6 +26,7 @@ export function createDb(path) {
     WHERE score > (SELECT score FROM scores WHERE pseudo = ?)
   `);
   const existsStmt = db.prepare(`SELECT 1 FROM scores WHERE pseudo = ?`);
+  const countStmt = db.prepare(`SELECT COUNT(*) AS total FROM scores`);
 
   return {
     raw: db,
@@ -39,6 +40,9 @@ export function createDb(path) {
     rankOf(pseudo) {
       if (!existsStmt.get(pseudo)) return null;
       return rankStmt.get(pseudo).rank;
+    },
+    countScores() {
+      return countStmt.get().total;
     },
   };
 }

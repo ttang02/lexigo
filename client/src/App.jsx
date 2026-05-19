@@ -31,7 +31,7 @@ export default function App() {
   }
 
   return (
-    <main className="min-h-dvh px-4 py-6 md:py-10 bg-bg text-text-base">
+    <main className="min-h-dvh px-4 py-6 md:py-10 text-text-base">
       <AnimatePresence mode="wait">
         {screen === "menu" && (
           <Screen key="menu">

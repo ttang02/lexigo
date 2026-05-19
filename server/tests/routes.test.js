@@ -79,6 +79,15 @@ describe("POST /api/scores + GET /api/scores", () => {
     const r = await request(app).post("/api/scores").send({ pseudo: "", score: 10 });
     expect(r.status).toBe(400);
   });
+  it("returns total player count in rank response", async () => {
+    const { app } = makeApp();
+    await request(app).post("/api/scores").send({ pseudo: "alice", score: 100 });
+    await request(app).post("/api/scores").send({ pseudo: "bob", score: 50 });
+    const r = await request(app).post("/api/scores").send({ pseudo: "carol", score: 75 });
+    expect(r.status).toBe(200);
+    expect(r.body.rank).toBe(2);
+    expect(r.body.total).toBe(3);
+  });
 });
 
 describe("GET /api/solve", () => {

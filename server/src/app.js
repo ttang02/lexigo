@@ -53,7 +53,9 @@ export function buildApp({ trie, db, cache, normalize }) {
     if (!PSEUDO_RE.test(cleanPseudo)) return res.status(400).json({ error: "invalid pseudo", code: "PSEUDO_INVALID" });
     if (!Number.isInteger(score) || score < 0 || score > 100_000) return res.status(400).json({ error: "invalid score", code: "SCORE_INVALID" });
     db.upsertScore({ pseudo: cleanPseudo, score });
-    res.json({ ok: true, rank: db.rankOf(cleanPseudo) });
+    const rank = db.rankOf(cleanPseudo);
+    const total = db.countScores();
+    res.json({ ok: true, rank, total });
   });
 
   app.get("/api/scores", (req, res) => {
