@@ -31,7 +31,7 @@ export function Grid({
 
   return (
     <motion.div
-      className="grid grid-cols-4 gap-2 w-full max-w-[480px] aspect-square mx-auto p-2 rounded-2xl bg-surface/40"
+      className="relative grid grid-cols-4 gap-2 w-full max-w-[480px] aspect-square mx-auto p-2 rounded-2xl bg-surface/40"
       role="group"
       aria-label="Ruzzle grid"
       variants={reduced ? undefined : gridVariants}
@@ -65,6 +65,25 @@ export function Grid({
           />
         );
       })}
+      {path.length >= 2 && !reduced && (
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          viewBox="0 0 480 480"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <polyline
+            points={path
+              .map((i) => `${8 + (i % 4) * 118 + 55},${8 + Math.floor(i / 4) * 118 + 55}`)
+              .join(" ")}
+            fill="none"
+            stroke="#8B5CF6"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="0.7"
+          />
+        </svg>
+      )}
     </motion.div>
   );
 }

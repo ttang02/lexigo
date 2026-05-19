@@ -68,4 +68,19 @@ describe("Grid", () => {
     expect(buttons[3].className).toMatch(/success/);
     expect(buttons[1].className).not.toMatch(/success/);
   });
+
+  it("renders SVG polyline when path has 2 or more tiles", () => {
+    render(<Grid cells={cells} path={[0, 1, 2]} onTap={() => {}} />);
+    expect(document.querySelector("polyline")).toBeInTheDocument();
+  });
+
+  it("does not render polyline when path has fewer than 2 tiles", () => {
+    render(<Grid cells={cells} path={[0]} onTap={() => {}} />);
+    expect(document.querySelector("polyline")).not.toBeInTheDocument();
+  });
+
+  it("does not render polyline when path is empty", () => {
+    render(<Grid cells={cells} path={[]} onTap={() => {}} />);
+    expect(document.querySelector("polyline")).not.toBeInTheDocument();
+  });
 });
