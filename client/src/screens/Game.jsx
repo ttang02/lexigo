@@ -7,6 +7,7 @@ import { FloatingScore } from "../components/FloatingScore.jsx";
 import { usePathSelection } from "../hooks/usePathSelection.js";
 import { useTimer } from "../hooks/useTimer.js";
 import { fetchGrid, validateWord } from "../api.js";
+import { BonusLegend } from "../components/BonusLegend.jsx";
 
 const DURATION = 120_000;
 
@@ -17,6 +18,8 @@ export function Game({ onEnd }) {
   const [flashPath, setFlashPath] = useState([]);
   const [floatingScore, setFloatingScore] = useState(null);
   const [scoreKey, setScoreKey] = useState(0);
+  const [gridError, setGridError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
   const flashTimersRef = useRef([]);
   const { path, tap, reset } = usePathSelection();
   const { remainingMs, running, start } = useTimer({
@@ -30,7 +33,13 @@ export function Game({ onEnd }) {
       }),
   });
 
-  useEffect(() => { fetchGrid().then(setGrid); }, []);
+  useEffect(() => {
+    setGrid(null);
+    setGridError(null);
+    fetchGrid()
+      .then(setGrid)
+      .catch(() => setGridError(true));
+  }, [retryCount]);
 
   useEffect(() => () => { flashTimersRef.current.forEach(clearTimeout); }, []);
 
@@ -70,12 +79,29 @@ export function Game({ onEnd }) {
     reset();
   }
 
-  if (!grid) return <p>Chargement…</p>;
+  if (gridError) return (
+    <div className="flex flex-col items-center gap-4 max-w-md mx-auto">
+      <p className="text-danger text-center">Impossible de charger la grille. Vérifie ta connexion.</p>
+      <button
+        onClick={() => setRetryCount((c) => c + 1)}
+        className="bg-surface px-6 py-2 rounded-lg"
+      >
+        Réessayer
+      </button>
+    </div>
+  );
+  if (!grid) return <p className="text-center text-text-muted">Chargement…</p>;
 
   return (
     <section className="grid gap-4 lg:grid-cols-[1fr_320px] max-w-5xl mx-auto">
       <div className="flex flex-col gap-3">
-        <Timer remainingMs={remainingMs} totalMs={DURATION} />
+        <div className="flex items-center justify-between">
+          <Timer remainingMs={remainingMs} totalMs={DURATION} />
+          <span className="font-display font-bold text-xl text-primary tabular-nums">
+            {words.reduce((s, w) => s + w.score, 0)}{" "}
+            <span className="text-sm text-text-muted font-normal">pts</span>
+          </span>
+        </div>
         <div className="relative">
           <Grid
             cells={grid.cells}
@@ -96,6 +122,7 @@ export function Game({ onEnd }) {
             Effacer
           </button>
         </div>
+        <BonusLegend />
         <p role="status" aria-live="polite" className="text-center text-sm h-5">
           <AnimatePresence mode="wait">
             {feedback && (
