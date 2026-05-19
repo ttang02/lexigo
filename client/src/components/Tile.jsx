@@ -69,13 +69,14 @@ export function Tile({
     animateProps = {
       scale: robotTrailOpacity === 1 ? 1.12 : 1,
       opacity: robotTrailOpacity,
+      filter: "brightness(1)",
     };
     transitionProps = {
       opacity: { duration: 0.15, ease: "easeOut" },
       scale: { type: "spring", stiffness: 400, damping: 18 },
     };
   } else {
-    animateProps = { scale: 1, opacity: 1 };
+    animateProps = { scale: 1, opacity: 1, filter: "brightness(1)" };
     transitionProps = {
       opacity: { duration: 0.15, ease: "easeOut" },
       scale: SPRING,
