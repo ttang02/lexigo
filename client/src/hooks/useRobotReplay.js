@@ -111,7 +111,10 @@ export function useRobotReplay({ solutions }) {
     setIdle(false);
   }
 
-  const isHolding = currentEntry !== null && stepIndex === currentEntry.path.length;
+  const isHolding =
+    currentEntry !== null &&
+    currentEntry.path.length > 0 &&
+    stepIndex === currentEntry.path.length;
 
   return {
     play,

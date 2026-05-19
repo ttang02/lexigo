@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Grid } from "../components/Grid.jsx";
 import { Timer } from "../components/Timer.jsx";
@@ -17,6 +17,7 @@ export function Game({ onEnd }) {
   const [flashPath, setFlashPath] = useState([]);
   const [floatingScore, setFloatingScore] = useState(null);
   const [scoreKey, setScoreKey] = useState(0);
+  const flashTimersRef = useRef([]);
   const { path, tap, reset } = usePathSelection();
   const { remainingMs, running, start } = useTimer({
     durationMs: DURATION,
@@ -30,6 +31,8 @@ export function Game({ onEnd }) {
   });
 
   useEffect(() => { fetchGrid().then(setGrid); }, []);
+
+  useEffect(() => () => { flashTimersRef.current.forEach(clearTimeout); }, []);
 
   function handleTap(i) {
     if (!running) start();
@@ -49,12 +52,15 @@ export function Game({ onEnd }) {
       if (r.valid) {
         setWords((arr) => [...arr, { word, score: r.score }]);
         setFeedback({ type: "ok", word, score: r.score });
-        // Flash tiles + floating score
+        // Flash tiles + floating score (timers tracked for unmount cleanup)
         setFlashPath([...path]);
         setFloatingScore(r.score);
         setScoreKey((k) => k + 1);
-        setTimeout(() => setFlashPath([]), 500);
-        setTimeout(() => setFloatingScore(null), 650);
+        flashTimersRef.current.forEach(clearTimeout);
+        flashTimersRef.current = [
+          setTimeout(() => setFlashPath([]), 500),
+          setTimeout(() => setFloatingScore(null), 650),
+        ];
       } else {
         setFeedback({ type: "no", word });
       }
