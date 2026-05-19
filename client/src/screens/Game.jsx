@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Grid } from "../components/Grid.jsx";
 import { Timer } from "../components/Timer.jsx";
 import { WordList } from "../components/WordList.jsx";
+import { FloatingScore } from "../components/FloatingScore.jsx";
 import { usePathSelection } from "../hooks/usePathSelection.js";
 import { useTimer } from "../hooks/useTimer.js";
 import { fetchGrid, validateWord } from "../api.js";
@@ -13,10 +14,19 @@ export function Game({ onEnd }) {
   const [grid, setGrid] = useState(null);
   const [words, setWords] = useState([]);
   const [feedback, setFeedback] = useState(null);
+  const [flashPath, setFlashPath] = useState([]);
+  const [floatingScore, setFloatingScore] = useState(null);
+  const [scoreKey, setScoreKey] = useState(0);
   const { path, tap, reset } = usePathSelection();
   const { remainingMs, running, start } = useTimer({
     durationMs: DURATION,
-    onEnd: () => onEnd({ words, total: words.reduce((s, w) => s + w.score, 0), gridId: grid?.gridId, cells: grid?.cells }),
+    onEnd: () =>
+      onEnd({
+        words,
+        total: words.reduce((s, w) => s + w.score, 0),
+        gridId: grid?.gridId,
+        cells: grid?.cells,
+      }),
   });
 
   useEffect(() => { fetchGrid().then(setGrid); }, []);
@@ -29,12 +39,22 @@ export function Game({ onEnd }) {
   async function submit() {
     if (!grid || path.length < 2) { reset(); return; }
     const word = path.map((i) => grid.cells[i].letter).join("");
-    if (words.some((w) => w.word === word)) { setFeedback({ type: "dup", word }); reset(); return; }
+    if (words.some((w) => w.word === word)) {
+      setFeedback({ type: "dup", word });
+      reset();
+      return;
+    }
     try {
       const r = await validateWord({ gridId: grid.gridId, path, word });
       if (r.valid) {
         setWords((arr) => [...arr, { word, score: r.score }]);
         setFeedback({ type: "ok", word, score: r.score });
+        // Flash tiles + floating score
+        setFlashPath([...path]);
+        setFloatingScore(r.score);
+        setScoreKey((k) => k + 1);
+        setTimeout(() => setFlashPath([]), 500);
+        setTimeout(() => setFloatingScore(null), 650);
       } else {
         setFeedback({ type: "no", word });
       }
@@ -50,12 +70,25 @@ export function Game({ onEnd }) {
     <section className="grid gap-4 lg:grid-cols-[1fr_320px] max-w-5xl mx-auto">
       <div className="flex flex-col gap-3">
         <Timer remainingMs={remainingMs} totalMs={DURATION} />
-        <Grid cells={grid.cells} path={path} onTap={handleTap} />
+        <div className="relative">
+          <Grid
+            cells={grid.cells}
+            path={path}
+            flashPath={flashPath}
+            onTap={handleTap}
+          />
+          <FloatingScore score={floatingScore} scoreKey={scoreKey} />
+        </div>
         <div className="flex gap-2 justify-center">
-          <button onClick={submit} className="bg-primary text-bg font-display font-bold px-6 py-2 rounded-lg">
+          <button
+            onClick={submit}
+            className="bg-primary text-bg font-display font-bold px-6 py-2 rounded-lg"
+          >
             Valider
           </button>
-          <button onClick={reset} className="bg-surface px-6 py-2 rounded-lg">Effacer</button>
+          <button onClick={reset} className="bg-surface px-6 py-2 rounded-lg">
+            Effacer
+          </button>
         </div>
         <p role="status" aria-live="polite" className="text-center text-sm h-5">
           <AnimatePresence mode="wait">
@@ -68,10 +101,18 @@ export function Game({ onEnd }) {
                 transition={{ duration: 0.15, ease: "easeOut" }}
                 className="inline-block"
               >
-                {feedback.type === "ok" && <span className="text-success">{feedback.word} +{feedback.score}</span>}
-                {feedback.type === "no" && <span className="text-danger">{feedback.word} — pas dans le dico</span>}
-                {feedback.type === "dup" && <span className="text-text-muted">{feedback.word} — déjà trouvé</span>}
-                {feedback.type === "err" && <span className="text-danger">{feedback.message}</span>}
+                {feedback.type === "ok" && (
+                  <span className="text-success">{feedback.word} +{feedback.score}</span>
+                )}
+                {feedback.type === "no" && (
+                  <span className="text-danger">{feedback.word} — pas dans le dico</span>
+                )}
+                {feedback.type === "dup" && (
+                  <span className="text-text-muted">{feedback.word} — déjà trouvé</span>
+                )}
+                {feedback.type === "err" && (
+                  <span className="text-danger">{feedback.message}</span>
+                )}
               </motion.span>
             )}
           </AnimatePresence>
