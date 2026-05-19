@@ -42,7 +42,7 @@ export function Menu({ onPlay, onLeaderboard }) {
       <motion.button
         variants={reduced ? undefined : item}
         onClick={onLeaderboard}
-        className="text-text-muted underline"
+        className="border border-surface-2 text-text-muted px-6 py-2 rounded-lg hover:border-primary/40 hover:text-text-base transition-colors duration-150"
       >
         Voir le classement
       </motion.button>
