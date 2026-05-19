@@ -88,6 +88,7 @@ export function useRobotReplay({ solutions }) {
     }
   }, [solutions, reduced]);
 
+  // Keep ref pointing to latest runStep so recursive callbacks always use current closure
   useEffect(() => { runStepRef.current = runStep; }, [runStep]);
 
   const play = useCallback(() => {
