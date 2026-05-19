@@ -1,16 +1,16 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { usePrefersReducedMotion } from "./usePrefersReducedMotion.js";
 
-const STAGGER_MS = 120;
-const HOLD_MS = 600;
-const CLEAR_MS = 300;
-const GAP_MS = 150;
+const STAGGER_MS = 200;
+const HOLD_MS = 900;
+const CLEAR_MS = 400;
+const GAP_MS = 250;
 const REDUCED_HOLD_MS = 800;
 
 export function useRobotReplay({ solutions }) {
-  const [activeIndices, setActiveIndices] = useState(new Set());
   const [currentEntry, setCurrentEntry] = useState(null);
   const [wordIndex, setWordIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(0);
   const [done, setDone] = useState(false);
   const [idle, setIdle] = useState(true);
   const reduced = usePrefersReducedMotion();
@@ -30,8 +30,8 @@ export function useRobotReplay({ solutions }) {
     const { wordIndex: wi, stepIndex: si } = stateRef.current;
 
     if (wi >= solutions.length) {
-      setActiveIndices(new Set());
       setCurrentEntry(null);
+      setStepIndex(0);
       setDone(true);
       stateRef.current.running = false;
       return;
@@ -44,12 +44,16 @@ export function useRobotReplay({ solutions }) {
     setWordIndex(wi);
 
     if (reduced) {
-      setActiveIndices(new Set(path));
+      // Show all tiles at once, then clear after hold
+      stateRef.current.stepIndex = path.length;
+      setStepIndex(path.length);
       timerRef.current = setTimeout(() => {
-        setActiveIndices(new Set());
+        stateRef.current.stepIndex = path.length + 1;
+        setStepIndex(path.length + 1);
         timerRef.current = setTimeout(() => {
           stateRef.current.wordIndex += 1;
           stateRef.current.stepIndex = 0;
+          setStepIndex(0);
           runStepRef.current?.();
         }, GAP_MS);
       }, REDUCED_HOLD_MS);
@@ -57,29 +61,33 @@ export function useRobotReplay({ solutions }) {
     }
 
     if (si < path.length) {
+      // Reveal next tile
       timerRef.current = setTimeout(() => {
-        setActiveIndices((prev) => new Set([...prev, path[si]]));
         stateRef.current.stepIndex += 1;
+        setStepIndex(stateRef.current.stepIndex);
         runStepRef.current?.();
       }, STAGGER_MS);
     } else if (si === path.length) {
+      // Hold: all tiles visible, wait before clearing
       timerRef.current = setTimeout(() => {
         stateRef.current.stepIndex += 1;
+        setStepIndex(stateRef.current.stepIndex); // path.length + 1 = clear signal
         runStepRef.current?.();
       }, HOLD_MS);
     } else {
+      // Clear: stepIndex > path.length — Grid already shows opacity 0
       timerRef.current = setTimeout(() => {
-        setActiveIndices(new Set());
         timerRef.current = setTimeout(() => {
           stateRef.current.wordIndex += 1;
           stateRef.current.stepIndex = 0;
+          setWordIndex(stateRef.current.wordIndex);
+          setStepIndex(0);
           runStepRef.current?.();
         }, GAP_MS);
       }, CLEAR_MS);
     }
   }, [solutions, reduced]);
 
-  // Keep ref pointing to latest runStep so recursive calls always use current version
   useEffect(() => { runStepRef.current = runStep; }, [runStep]);
 
   const play = useCallback(() => {
@@ -87,7 +95,7 @@ export function useRobotReplay({ solutions }) {
     stateRef.current = { wordIndex: 0, stepIndex: 0, running: true };
     setDone(false);
     setIdle(false);
-    setActiveIndices(new Set());
+    setStepIndex(0);
     setCurrentEntry(solutions.length > 0 ? solutions[0] : null);
     setWordIndex(0);
     runStep();
@@ -96,16 +104,19 @@ export function useRobotReplay({ solutions }) {
   function skip() {
     clearTimer();
     stateRef.current.running = false;
-    setActiveIndices(new Set());
+    setStepIndex(0);
     setCurrentEntry(null);
     setDone(true);
     setIdle(false);
   }
 
+  const isHolding = currentEntry !== null && stepIndex === currentEntry.path.length;
+
   return {
     play,
     skip,
-    activeIndices,
+    stepIndex,
+    isHolding,
     currentEntry,
     wordIndex,
     total: solutions.length,
