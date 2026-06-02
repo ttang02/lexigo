@@ -38,6 +38,13 @@ export class Trie {
   hasPrefix(prefix) {
     return !!this._find(prefix);
   }
+  // Incremental traversal for DFS solvers: step one char from a node.
+  // Returns child node or null. Avoids re-walking from root each step.
+  childOf(node, ch) {
+    const idx = ch.charCodeAt(0) - A_CODE;
+    if (idx < 0 || idx >= ALPHABET) return null;
+    return node.children[idx] || null;
+  }
 }
 
 export async function loadDictionary(filePath, fs) {
