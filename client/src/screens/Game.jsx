@@ -22,6 +22,8 @@ export function Game({ onEnd }) {
   const [gridError, setGridError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const [bots, setBots] = useState([]);
+  const botsRef = useRef([]);
+  useEffect(() => { botsRef.current = bots; }, [bots]);
   const flashTimersRef = useRef([]);
   const submittingRef = useRef(false);
   const { path, tap, reset } = usePathSelection();
@@ -30,7 +32,7 @@ export function Game({ onEnd }) {
 
   const { remainingMs, running, start } = useTimer({
     durationMs: DURATION,
-    onEnd: () => onEnd({ words, total, gridId: grid?.gridId, cells: grid?.cells, bots }),
+    onEnd: () => onEnd({ words, total, gridId: grid?.gridId, cells: grid?.cells, bots: botsRef.current }),
   });
 
   const elapsedMs = DURATION - remainingMs;

@@ -36,6 +36,7 @@ export function buildApp({
   const globalLimiter = createRateLimiter({ windowMs: 60_000, max: 120 });
   const gridLimiter = createRateLimiter({ windowMs: 60_000, max: 30 });
   const solveLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
+  const botsLimiter = createRateLimiter({ windowMs: 60_000, max: 15 });
   const validateLimiter = createRateLimiter({ windowMs: 60_000, max: 240 });
   const scoreWriteLimiter = createRateLimiter({ windowMs: 60_000, max: 20 });
   const scoreReadLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
@@ -61,7 +62,7 @@ export function buildApp({
     res.json({ solutions });
   });
 
-  app.get("/api/bots", solveLimiter, (req, res) => {
+  app.get("/api/bots", botsLimiter, (req, res) => {
     const { gridId } = req.query;
     const cells = cache.get(gridId);
     if (!cells) return res.status(400).json({ error: "grid expired or unknown", code: "GRID_MISSING" });

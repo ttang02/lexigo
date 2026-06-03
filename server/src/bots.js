@@ -47,8 +47,8 @@ export function buildBots(solutions, { gameMs = GAME_MS, rng = Math.random } = {
     let t = 0;
     let total = 0;
     for (let i = 0; i < take; i++) {
-      // jitter pace in [0.6x, 1.4x]; rng()=0.5 -> exactly speedMs
-      t += def.speedMs * (0.6 + rng() * 0.8);
+      // jitter pace in [0.7x, 1.3x]; rng()=0.5 -> exactly speedMs
+      t += def.speedMs * (0.7 + rng() * 0.6);
       if (t > gameMs) break;
       const e = ordered[i];
       timeline.push({ word: e.word, score: e.score, atMs: Math.round(t) });
