@@ -18,11 +18,12 @@ export async function validateWord({ gridId, path, word }) {
   return json(r);
 }
 
-export async function submitScore({ pseudo, score }) {
+export async function submitScore({ pseudo, gridId }) {
+  // Score is derived server-side from the play session; we only send the grid.
   const r = await fetch("/api/scores", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ pseudo, score }),
+    body: JSON.stringify({ pseudo, gridId }),
   });
   return json(r);
 }

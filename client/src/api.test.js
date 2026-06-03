@@ -16,10 +16,13 @@ describe("api", () => {
     expect(fetch).toHaveBeenCalledWith("/api/validate", expect.objectContaining({ method: "POST" }));
     expect(r.valid).toBe(true);
   });
-  it("submitScore POSTs and returns ok+rank", async () => {
-    fetch.mockResolvedValue({ ok: true, json: async () => ({ ok: true, rank: 3 }) });
-    const r = await api.submitScore({ pseudo: "a", score: 10 });
+  it("submitScore POSTs pseudo+gridId and returns ok+rank", async () => {
+    fetch.mockResolvedValue({ ok: true, json: async () => ({ ok: true, rank: 3, score: 88 }) });
+    const r = await api.submitScore({ pseudo: "a", gridId: "g-1" });
+    const [, opts] = fetch.mock.calls[0];
+    expect(JSON.parse(opts.body)).toEqual({ pseudo: "a", gridId: "g-1" });
     expect(r.rank).toBe(3);
+    expect(r.score).toBe(88);
   });
   it("fetchLeaderboard GETs with limit", async () => {
     fetch.mockResolvedValue({ ok: true, json: async () => ([]) });

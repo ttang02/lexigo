@@ -4,5 +4,8 @@ server/data/dict.txt
 server/data/scores.sqlite
 .env
 *.sqlite
+*.sqlite-shm
+*.sqlite-wal
 .claude/worktrees/
 .superpowers/
+.claire/
