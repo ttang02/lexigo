@@ -4,6 +4,7 @@ import { generateGrid } from "./grid.js";
 import { isPathValid, wordFromPath } from "./validate.js";
 import { computeScore } from "./score.js";
 import { solve } from "./solver.js";
+import { buildBots } from "./bots.js";
 import { SolveCache, PlaySessionStore } from "./gridCache.js";
 import { createRateLimiter } from "./rateLimit.js";
 
@@ -58,6 +59,18 @@ export function buildApp({
     const solutions = solve({ cells, trie });
     solveCache.set(gridId, solutions);
     res.json({ solutions });
+  });
+
+  app.get("/api/bots", solveLimiter, (req, res) => {
+    const { gridId } = req.query;
+    const cells = cache.get(gridId);
+    if (!cells) return res.status(400).json({ error: "grid expired or unknown", code: "GRID_MISSING" });
+    let solutions = solveCache.get(gridId);
+    if (!solutions) {
+      solutions = solve({ cells, trie });
+      solveCache.set(gridId, solutions);
+    }
+    res.json({ bots: buildBots(solutions) });
   });
 
   app.post("/api/validate", validateLimiter, (req, res) => {

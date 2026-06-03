@@ -178,6 +178,29 @@ describe("GET /api/solve", () => {
   });
 });
 
+describe("GET /api/bots", () => {
+  it("returns bot timelines for a known grid", async () => {
+    const { app, cache } = makeApp();
+    cache.set("bots-id", Array.from({ length: 16 }, (_, i) => ({ letter: i < 4 ? "CHAT"[i] : "X", bonus: null })));
+    const res = await request(app).get("/api/bots?gridId=bots-id");
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.bots)).toBe(true);
+    expect(res.body.bots.length).toBeGreaterThan(0);
+    const bot = res.body.bots[0];
+    expect(typeof bot.id).toBe("string");
+    expect(typeof bot.name).toBe("string");
+    expect(Array.isArray(bot.timeline)).toBe(true);
+    expect(typeof bot.total).toBe("number");
+  });
+
+  it("returns 400 GRID_MISSING for unknown gridId", async () => {
+    const { app } = makeApp();
+    const res = await request(app).get("/api/bots?gridId=nope");
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("GRID_MISSING");
+  });
+});
+
 describe("POST /api/scores — pseudo normalization", () => {
   it("collapses internal whitespace", async () => {
     const { app, sessions } = makeApp();

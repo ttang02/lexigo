@@ -37,3 +37,8 @@ export async function fetchSolution(gridId) {
   const r = await fetch(`/api/solve?gridId=${encodeURIComponent(gridId)}`);
   return json(r);
 }
+
+export async function fetchBots(gridId) {
+  const r = await fetch(`/api/bots?gridId=${encodeURIComponent(gridId)}`);
+  return json(r);
+}

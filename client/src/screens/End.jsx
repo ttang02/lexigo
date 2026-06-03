@@ -5,7 +5,7 @@ import { Leaderboard } from "../components/Leaderboard.jsx";
 import { submitScore, fetchLeaderboard } from "../api.js";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
 
-export function End({ total, gridId, onRestart, onMenu, onRobotReplay }) {
+export function End({ total, gridId, bots = [], onRestart, onMenu, onRobotReplay }) {
   const reduced = usePrefersReducedMotion();
   const [submitted, setSubmitted] = useState(false);
   const [rank, setRank] = useState(null);
@@ -85,6 +85,16 @@ export function End({ total, gridId, onRestart, onMenu, onRobotReplay }) {
           )}
         </motion.p>
       </div>
+      {bots.length > 0 && (
+        <p className="text-center text-sm text-text-muted">
+          <span aria-hidden="true">🤖 </span>
+          Tu as battu{" "}
+          <span className="text-accent font-bold">
+            {bots.filter((b) => finalScore > b.total).length}
+          </span>{" "}
+          robot{bots.length > 1 ? "s" : ""} sur {bots.length}
+        </p>
+      )}
       <Leaderboard rows={board} />
       <div className="flex gap-2 justify-center">
         <button type="button" onClick={onRestart} className="bg-primary text-bg px-6 py-2 rounded-lg font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Rejouer</button>

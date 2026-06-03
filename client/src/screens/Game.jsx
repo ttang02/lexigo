@@ -6,8 +6,9 @@ import { WordList } from "../components/WordList.jsx";
 import { FloatingScore } from "../components/FloatingScore.jsx";
 import { usePathSelection } from "../hooks/usePathSelection.js";
 import { useTimer } from "../hooks/useTimer.js";
-import { fetchGrid, validateWord } from "../api.js";
+import { fetchGrid, validateWord, fetchBots } from "../api.js";
 import { BonusLegend } from "../components/BonusLegend.jsx";
+import { BotsPanel } from "../components/BotsPanel.jsx";
 
 const DURATION = 120_000;
 
@@ -20,6 +21,7 @@ export function Game({ onEnd }) {
   const [scoreKey, setScoreKey] = useState(0);
   const [gridError, setGridError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [bots, setBots] = useState([]);
   const flashTimersRef = useRef([]);
   const submittingRef = useRef(false);
   const { path, tap, reset } = usePathSelection();
@@ -28,14 +30,21 @@ export function Game({ onEnd }) {
 
   const { remainingMs, running, start } = useTimer({
     durationMs: DURATION,
-    onEnd: () => onEnd({ words, total, gridId: grid?.gridId, cells: grid?.cells }),
+    onEnd: () => onEnd({ words, total, gridId: grid?.gridId, cells: grid?.cells, bots }),
   });
+
+  const elapsedMs = DURATION - remainingMs;
 
   useEffect(() => {
     setGrid(null);
     setGridError(null);
+    setBots([]);
     fetchGrid()
-      .then(setGrid)
+      .then((g) => {
+        setGrid(g);
+        // Bots race on the same grid; precomputed timelines drive a live ticker.
+        fetchBots(g.gridId).then((r) => setBots(r.bots)).catch(() => {});
+      })
       .catch(() => setGridError(true));
   }, [retryCount]);
 
@@ -158,7 +167,10 @@ export function Game({ onEnd }) {
           </AnimatePresence>
         </p>
       </div>
-      <WordList words={words} />
+      <div className="flex flex-col gap-4">
+        <BotsPanel bots={bots} elapsedMs={elapsedMs} playerScore={total} />
+        <WordList words={words} />
+      </div>
     </section>
   );
 }
