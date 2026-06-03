@@ -1,5 +1,5 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
-import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
 
 const BONUS_LABEL = {
   DL: "double letter",
@@ -25,18 +25,19 @@ export const tileVariants = {
   },
 };
 
-export function Tile({
+function TileImpl({
   letter,
   bonus,
   index,
   selected,
+  reduced = false,
+  tabIndex = -1,
   robotTrailOpacity = 0,
   robotPulsing = false,
   flashing = false,
   onTap,
 }) {
-  const reduced = usePrefersReducedMotion();
-  const ariaLabel = `Letter ${letter}${bonus ? `, ${BONUS_LABEL[bonus]} bonus` : ""}`;
+  const ariaLabel = `Lettre ${letter}${bonus ? `, bonus ${BONUS_LABEL[bonus]}` : ""}`;
 
   let bgClass;
   if (flashing) {
@@ -86,6 +87,8 @@ export function Tile({
   return (
     <motion.button
       type="button"
+      data-index={index}
+      tabIndex={tabIndex}
       onClick={() => onTap(index)}
       aria-label={ariaLabel}
       aria-pressed={selected}
@@ -98,12 +101,14 @@ export function Tile({
         "relative aspect-square rounded-tile font-display font-bold text-3xl md:text-4xl",
         "flex items-center justify-center select-none",
         "transition-colors duration-150",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:z-10",
         bgClass,
       ].join(" ")}
     >
       {letter}
       {bonus && (
         <span
+          aria-hidden="true"
           className={`absolute top-1 right-1 text-[10px] font-bold px-1 py-0.5 rounded-md text-white ${BONUS_BG[bonus]}`}
         >
           {bonus}
@@ -112,3 +117,6 @@ export function Tile({
     </motion.button>
   );
 }
+
+// Memoized: during robot replay only the few tiles whose props change re-render.
+export const Tile = memo(TileImpl);

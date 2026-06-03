@@ -32,7 +32,7 @@ describe("RobotReplay", () => {
     await act(async () => {
       render(<RobotReplay gridId="g1" cells={CELLS} onDone={() => {}} />);
     });
-    expect(screen.getByRole("group", { name: /grid/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /grille/i })).toBeInTheDocument();
     expect(screen.getByText(/1 \/ 1/)).toBeInTheDocument();
   });
 

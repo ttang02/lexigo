@@ -4,6 +4,7 @@ export function Leaderboard({ rows }) {
   }
   return (
     <table className="w-full bg-surface rounded-2xl overflow-hidden">
+      <caption className="sr-only">Classement des meilleurs scores</caption>
       <thead>
         <tr className="text-left text-text-muted text-sm">
           <th className="p-3">#</th>

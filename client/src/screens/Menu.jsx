@@ -35,14 +35,14 @@ export function Menu({ onPlay, onLeaderboard }) {
       <motion.button
         variants={reduced ? undefined : item}
         onClick={onPlay}
-        className="bg-primary text-bg font-display font-bold px-8 py-3 rounded-xl text-lg"
+        className="bg-primary text-bg font-display font-bold px-8 py-3 rounded-xl text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         Jouer
       </motion.button>
       <motion.button
         variants={reduced ? undefined : item}
         onClick={onLeaderboard}
-        className="border border-surface-2 text-text-muted px-6 py-2 rounded-lg hover:border-primary/40 hover:text-text-base transition-colors duration-150"
+        className="border border-surface-2 text-text-muted px-6 py-2 rounded-lg hover:border-primary/40 hover:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-colors duration-150"
       >
         Voir le classement
       </motion.button>

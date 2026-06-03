@@ -1,6 +1,10 @@
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Tile } from "./Tile.jsx";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
+
+const COLS = 4;
+const ROWS = 4;
 
 const gridVariants = {
   hidden: {},
@@ -15,7 +19,7 @@ function trailOpacity(posInPath, stepIndex) {
   return 0.15;
 }
 
-export function Grid({
+function GridImpl({
   cells,
   path,
   robotPath = [],
@@ -25,30 +29,73 @@ export function Grid({
   onTap,
 }) {
   const reduced = usePrefersReducedMotion();
-  const selected = new Set(path);
-  const flashing = new Set(flashPath);
+  const containerRef = useRef(null);
+  const [focused, setFocused] = useState(0);
+
+  const selected = useMemo(() => new Set(path), [path]);
+  const flashing = useMemo(() => new Set(flashPath), [flashPath]);
+  // Map tile index -> position in robot path (O(1) lookup vs indexOf per tile).
+  const robotPos = useMemo(() => {
+    const m = new Map();
+    for (let i = 0; i < robotPath.length; i++) m.set(robotPath[i], i);
+    return m;
+  }, [robotPath]);
   const isClearing = stepIndex > robotPath.length;
+
+  const focusTile = useCallback((idx) => {
+    setFocused(idx);
+    containerRef.current
+      ?.querySelector(`[data-index="${idx}"]`)
+      ?.focus();
+  }, []);
+
+  // Roving focus: arrow keys move within the 4x4 grid; Enter/Space select
+  // (native button behavior). Keyboard nav itself is not animated.
+  const onKeyDown = useCallback(
+    (e) => {
+      const r = Math.floor(focused / COLS);
+      const c = focused % COLS;
+      let next = null;
+      switch (e.key) {
+        case "ArrowRight": next = r * COLS + Math.min(COLS - 1, c + 1); break;
+        case "ArrowLeft": next = r * COLS + Math.max(0, c - 1); break;
+        case "ArrowDown": next = Math.min(ROWS - 1, r + 1) * COLS + c; break;
+        case "ArrowUp": next = Math.max(0, r - 1) * COLS + c; break;
+        case "Home": next = 0; break;
+        case "End": next = cells.length - 1; break;
+        default: return;
+      }
+      e.preventDefault();
+      if (next !== focused) focusTile(next);
+    },
+    [focused, focusTile, cells.length]
+  );
+
+  const onFocusCapture = useCallback((e) => {
+    const idx = e.target?.dataset?.index;
+    if (idx != null) setFocused(Number(idx));
+  }, []);
 
   return (
     <motion.div
+      ref={containerRef}
       className="relative grid grid-cols-4 gap-2 w-full max-w-[480px] aspect-square mx-auto p-2 rounded-2xl bg-surface/40"
       role="group"
-      aria-label="Ruzzle grid"
+      aria-label="Grille Ruzzle — flèches pour naviguer, Entrée pour sélectionner une lettre"
+      onKeyDown={onKeyDown}
+      onFocusCapture={onFocusCapture}
       variants={reduced ? undefined : gridVariants}
       initial={reduced ? false : "hidden"}
       animate="visible"
     >
       {cells.map((c, i) => {
-        const posInPath = robotPath.indexOf(i);
-        const revealed =
-          posInPath !== -1 && posInPath < stepIndex && !isClearing;
-
+        const pos = robotPos.has(i) ? robotPos.get(i) : -1;
+        const revealed = pos !== -1 && pos < stepIndex && !isClearing;
         const robotTrailOpacity = revealed
           ? isHolding
             ? 1
-            : trailOpacity(posInPath, stepIndex)
+            : trailOpacity(pos, stepIndex)
           : 0;
-
         const robotPulsing = revealed && isHolding;
 
         return (
@@ -57,6 +104,8 @@ export function Grid({
             letter={c.letter}
             bonus={c.bonus}
             index={i}
+            reduced={reduced}
+            tabIndex={i === focused ? 0 : -1}
             selected={selected.has(i)}
             robotTrailOpacity={robotTrailOpacity}
             robotPulsing={robotPulsing}
@@ -88,3 +137,5 @@ export function Grid({
     </motion.div>
   );
 }
+
+export const Grid = memo(GridImpl);

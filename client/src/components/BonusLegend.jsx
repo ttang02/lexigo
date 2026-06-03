@@ -13,11 +13,15 @@ export function BonusLegend() {
   return (
     <div className="text-sm">
       <button
+        type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1 text-text-muted text-xs font-display tracking-widest uppercase"
+        aria-expanded={open}
+        aria-controls="bonus-legend-panel"
+        className="flex items-center gap-1 text-text-muted text-xs font-display tracking-widest uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
       >
         <span>? Bonus</span>
         <motion.span
+          aria-hidden="true"
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.2 }}
           style={{ display: "inline-block" }}
@@ -28,6 +32,7 @@ export function BonusLegend() {
       <AnimatePresence>
         {open && (
           <motion.div
+            id="bonus-legend-panel"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}

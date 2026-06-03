@@ -5,6 +5,10 @@ export function useTimer({ durationMs, onEnd, tickMs = 100 }) {
   const [running, setRunning] = useState(false);
   const startAtRef = useRef(null);
   const endedRef = useRef(false);
+  // Keep latest onEnd in a ref so an inline callback at the call site does not
+  // retrigger the interval effect (which would tear down/restart every render).
+  const onEndRef = useRef(onEnd);
+  useEffect(() => { onEndRef.current = onEnd; }, [onEnd]);
 
   const start = useCallback(() => {
     startAtRef.current = Date.now();
@@ -24,11 +28,11 @@ export function useTimer({ durationMs, onEnd, tickMs = 100 }) {
       if (left === 0 && !endedRef.current) {
         endedRef.current = true;
         setRunning(false);
-        onEnd && onEnd();
+        onEndRef.current && onEndRef.current();
       }
     }, tickMs);
     return () => clearInterval(id);
-  }, [running, durationMs, onEnd, tickMs]);
+  }, [running, durationMs, tickMs]);
 
   return { remainingMs, running, start, stop };
 }
