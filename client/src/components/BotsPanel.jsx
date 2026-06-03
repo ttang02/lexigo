@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
 
 // Returns { score, found, last } for a bot at the given elapsed time.
@@ -42,21 +42,8 @@ export function BotsPanel({ bots, elapsedMs, playerScore }) {
                 <span className="text-sm font-medium leading-tight" style={{ color: b.color }}>
                   {b.name}
                 </span>
-                <span className="text-[11px] text-text-muted h-3.5 leading-tight truncate">
-                  <AnimatePresence mode="wait">
-                    {b.last && (
-                      <motion.span
-                        key={b.last}
-                        initial={reduced ? { opacity: 0 } : { opacity: 0, y: -3 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="inline-block"
-                      >
-                        {b.last}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                <span className="text-[11px] text-text-muted leading-tight">
+                  {b.found > 0 ? `${b.found} mot${b.found > 1 ? "s" : ""}` : "—"}
                 </span>
               </div>
               <motion.span
