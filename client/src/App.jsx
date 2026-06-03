@@ -5,6 +5,7 @@ import { Game } from "./screens/Game.jsx";
 import { End } from "./screens/End.jsx";
 import { LeaderboardScreen } from "./screens/LeaderboardScreen.jsx";
 import { RobotReplay } from "./screens/RobotReplay.jsx";
+import { HelpButton } from "./components/HelpButton.jsx";
 
 const SCREEN = { duration: 0.25, ease: [0.22, 1, 0.36, 1] };
 
@@ -77,6 +78,7 @@ export default function App() {
           </Screen>
         )}
       </AnimatePresence>
+      <HelpButton />
     </main>
   );
 }
