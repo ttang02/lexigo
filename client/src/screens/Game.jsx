@@ -6,13 +6,16 @@ import { WordList } from "../components/WordList.jsx";
 import { FloatingScore } from "../components/FloatingScore.jsx";
 import { usePathSelection } from "../hooks/usePathSelection.js";
 import { useTimer } from "../hooks/useTimer.js";
-import { fetchGrid, validateWord, fetchBots } from "../api.js";
+import { fetchGrid, validateWord, fetchBots, fetchHint } from "../api.js";
 import { BonusLegend } from "../components/BonusLegend.jsx";
 import { BotsPanel } from "../components/BotsPanel.jsx";
 
-const DURATION = 120_000;
+const DURATIONS = { normal: 120_000, bombe: 60_000 };
 
-export function Game({ onEnd }) {
+export function Game({ onEnd, mode = "normal" }) {
+  const DURATION = DURATIONS[mode] ?? DURATIONS.normal;
+  const isBombe = mode === "bombe";
+
   const [grid, setGrid] = useState(null);
   const [words, setWords] = useState([]);
   const [feedback, setFeedback] = useState(null);
@@ -22,6 +25,8 @@ export function Game({ onEnd }) {
   const [gridError, setGridError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const [bots, setBots] = useState([]);
+  const [hinting, setHinting] = useState(false);
+  const [hintCooldown, setHintCooldown] = useState(false);
   const botsRef = useRef([]);
   useEffect(() => { botsRef.current = bots; }, [bots]);
   const flashTimersRef = useRef([]);
@@ -44,7 +49,6 @@ export function Game({ onEnd }) {
     fetchGrid()
       .then((g) => {
         setGrid(g);
-        // Bots race on the same grid; precomputed timelines drive a live ticker.
         fetchBots(g.gridId).then((r) => setBots(r.bots)).catch(() => {});
       })
       .catch(() => setGridError(true));
@@ -58,7 +62,7 @@ export function Game({ onEnd }) {
   }, [running, start, tap]);
 
   const submit = useCallback(async () => {
-    if (submittingRef.current) return; // lock: block concurrent submits
+    if (submittingRef.current) return;
     if (!grid || path.length < 2) { reset(); return; }
     const word = path.map((i) => grid.cells[i].letter).join("");
     if (words.some((w) => w.word === word)) {
@@ -91,14 +95,29 @@ export function Game({ onEnd }) {
     }
   }, [grid, path, words, reset]);
 
+  const useHint = useCallback(async () => {
+    if (!grid || hinting || hintCooldown) return;
+    setHinting(true);
+    try {
+      const r = await fetchHint(grid.gridId);
+      setFlashPath(r.path);
+      setFeedback({ type: "hint", word: r.word, cost: r.cost });
+      flashTimersRef.current.push(setTimeout(() => setFlashPath([]), 1500));
+      setHintCooldown(true);
+      setTimeout(() => setHintCooldown(false), 10_000);
+    } catch (e) {
+      const noHint = /NO_HINT/i.test(e.message);
+      setFeedback({ type: "err", message: noHint ? "Tous les mots déjà trouvés !" : "Indice indisponible" });
+    } finally {
+      setHinting(false);
+    }
+  }, [grid, hinting, hintCooldown]);
+
   if (gridError) return (
     <div className="flex flex-col items-center gap-4 max-w-md mx-auto">
       <p className="text-danger text-center">Impossible de charger la grille. Vérifie ta connexion.</p>
-      <button
-        type="button"
-        onClick={() => setRetryCount((c) => c + 1)}
-        className="bg-surface px-6 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-      >
+      <button type="button" onClick={() => setRetryCount((c) => c + 1)}
+        className="bg-surface px-6 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
         Réessayer
       </button>
     </div>
@@ -109,35 +128,36 @@ export function Game({ onEnd }) {
     <section className="grid gap-4 lg:grid-cols-[1fr_320px] max-w-5xl mx-auto">
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <Timer remainingMs={remainingMs} totalMs={DURATION} />
+          <div className="flex items-center gap-2">
+            {isBombe && <span aria-hidden="true" className="text-2xl animate-pulse">💣</span>}
+            <Timer remainingMs={remainingMs} totalMs={DURATION} urgent={isBombe} />
+          </div>
           <span className="font-display font-bold text-xl text-primary tabular-nums">
             {total}{" "}
             <span className="text-sm text-text-muted font-normal">pts</span>
           </span>
         </div>
         <div className="relative">
-          <Grid
-            cells={grid.cells}
-            path={path}
-            flashPath={flashPath}
-            onTap={handleTap}
-          />
+          <Grid cells={grid.cells} path={path} flashPath={flashPath} onTap={handleTap} />
           <FloatingScore score={floatingScore} scoreKey={scoreKey} />
         </div>
-        <div className="flex gap-2 justify-center">
-          <button
-            type="button"
-            onClick={submit}
-            className="bg-primary text-bg font-display font-bold px-6 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
+        <div className="flex gap-2 justify-center flex-wrap">
+          <button type="button" onClick={submit}
+            className="bg-primary text-bg font-display font-bold px-6 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
             Valider
+          </button>
+          <button type="button" onClick={reset}
+            className="bg-surface px-6 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            Effacer
           </button>
           <button
             type="button"
-            onClick={reset}
-            className="bg-surface px-6 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            onClick={useHint}
+            disabled={hinting || hintCooldown || !running}
+            aria-label="Indice — révèle un mot (-50 pts)"
+            className="bg-surface border border-surface-2 px-4 py-2 rounded-lg text-sm text-text-muted hover:text-text-base disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-colors"
           >
-            Effacer
+            💡 {hintCooldown ? "Indice…" : "-50 pts"}
           </button>
         </div>
         <BonusLegend />
@@ -145,25 +165,18 @@ export function Game({ onEnd }) {
           <AnimatePresence mode="wait">
             {feedback && (
               <motion.span
-                key={`${feedback.type}-${feedback.word ?? ""}`}
+                key={`${feedback.type}-${feedback.word ?? ""}-${feedback.message ?? ""}`}
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
                 className="inline-block"
               >
-                {feedback.type === "ok" && (
-                  <span className="text-success">{feedback.word} +{feedback.score}</span>
-                )}
-                {feedback.type === "no" && (
-                  <span className="text-danger">{feedback.word} — pas dans le dico</span>
-                )}
-                {feedback.type === "dup" && (
-                  <span className="text-text-muted">{feedback.word} — déjà trouvé</span>
-                )}
-                {feedback.type === "err" && (
-                  <span className="text-danger">{feedback.message}</span>
-                )}
+                {feedback.type === "ok" && <span className="text-success">{feedback.word} +{feedback.score}</span>}
+                {feedback.type === "no" && <span className="text-danger">{feedback.word} — pas dans le dico</span>}
+                {feedback.type === "dup" && <span className="text-text-muted">{feedback.word} — déjà trouvé</span>}
+                {feedback.type === "hint" && <span className="text-accent">💡 {feedback.word} (-{feedback.cost} pts)</span>}
+                {feedback.type === "err" && <span className="text-danger">{feedback.message}</span>}
               </motion.span>
             )}
           </AnimatePresence>

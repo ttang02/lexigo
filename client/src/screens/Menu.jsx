@@ -11,7 +11,7 @@ const item = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } },
 };
 
-export function Menu({ onPlay, onLeaderboard }) {
+export function Menu({ onPlay, onLeaderboard, onPlayBombe }) {
   const reduced = usePrefersReducedMotion();
   return (
     <motion.section
@@ -37,7 +37,14 @@ export function Menu({ onPlay, onLeaderboard }) {
         onClick={onPlay}
         className="bg-primary text-bg font-display font-bold px-8 py-3 rounded-xl text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
-        Jouer
+        Jouer — 2 min
+      </motion.button>
+      <motion.button
+        variants={reduced ? undefined : item}
+        onClick={onPlayBombe}
+        className="bg-danger/90 text-bg font-display font-bold px-8 py-3 rounded-xl text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent hover:bg-danger transition-colors"
+      >
+        💣 Mode Bombe — 60s
       </motion.button>
       <motion.button
         variants={reduced ? undefined : item}

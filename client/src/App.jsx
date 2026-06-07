@@ -32,6 +32,7 @@ function Screen({ children, label }) {
 
 export default function App() {
   const [screen, setScreen] = useState("menu");
+  const [gameMode, setGameMode] = useState("normal");
   const [gameResult, setGameResult] = useState({ total: 0, gridId: null, cells: [], bots: [], words: [] });
 
   function handleGameEnd({ total, gridId, cells, bots, words }) {
@@ -39,17 +40,26 @@ export default function App() {
     setScreen("end");
   }
 
+  function startGame(mode) {
+    setGameMode(mode);
+    setScreen("game");
+  }
+
   return (
     <main className="min-h-dvh px-4 py-6 md:py-10 text-text-base">
       <AnimatePresence mode="wait">
         {screen === "menu" && (
           <Screen key="menu" label="Menu">
-            <Menu onPlay={() => setScreen("game")} onLeaderboard={() => setScreen("leaderboard")} />
+            <Menu
+              onPlay={() => startGame("normal")}
+              onPlayBombe={() => startGame("bombe")}
+              onLeaderboard={() => setScreen("leaderboard")}
+            />
           </Screen>
         )}
         {screen === "game" && (
           <Screen key="game" label="Partie en cours">
-            <Game onEnd={handleGameEnd} />
+            <Game onEnd={handleGameEnd} mode={gameMode} />
           </Screen>
         )}
         {screen === "end" && (

@@ -42,3 +42,12 @@ export async function fetchBots(gridId) {
   const r = await fetch(`/api/bots?gridId=${encodeURIComponent(gridId)}`);
   return json(r);
 }
+
+export async function fetchHint(gridId) {
+  const r = await fetch("/api/hint", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ gridId }),
+  });
+  return json(r);
+}

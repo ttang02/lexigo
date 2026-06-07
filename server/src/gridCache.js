@@ -75,6 +75,19 @@ export class PlaySessionStore {
     }
     return entry.total;
   }
+  // Deduct penalty (hint cost). Clamps at 0. Returns new total or null.
+  penalize(gridId, amount) {
+    const entry = this.store.get(gridId);
+    if (!this._fresh(entry)) return null;
+    entry.total = Math.max(0, entry.total - amount);
+    return entry.total;
+  }
+  // Words already found by player for this grid (for hint exclusion).
+  foundWords(gridId) {
+    const entry = this.store.get(gridId);
+    if (!this._fresh(entry)) return new Set();
+    return new Set(entry.words);
+  }
   // Authoritative total for a grid, or null if no/expired session.
   totalOf(gridId) {
     const entry = this.store.get(gridId);

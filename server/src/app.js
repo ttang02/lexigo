@@ -40,6 +40,7 @@ export function buildApp({
   const validateLimiter = createRateLimiter({ windowMs: 60_000, max: 240 });
   const scoreWriteLimiter = createRateLimiter({ windowMs: 60_000, max: 20 });
   const scoreReadLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
+  const hintLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
   app.use("/api/", globalLimiter);
 
   app.get("/api/grid", gridLimiter, (_req, res) => {
@@ -72,6 +73,27 @@ export function buildApp({
       solveCache.set(gridId, solutions);
     }
     res.json({ bots: buildBots(solutions) });
+  });
+
+  // POST /api/hint — reveal one unfound word, deduct HINT_COST from session.
+  const HINT_COST = 50;
+  app.post("/api/hint", hintLimiter, (req, res) => {
+    const { gridId } = req.body || {};
+    const cells = cache.get(gridId);
+    if (!cells) return res.status(400).json({ error: "grid expired or unknown", code: "GRID_MISSING" });
+    const total = sessions.totalOf(gridId);
+    if (total === null) return res.status(400).json({ error: "no active session", code: "SESSION_MISSING" });
+    let solutions = solveCache.get(gridId);
+    if (!solutions) {
+      solutions = solve({ cells, trie });
+      solveCache.set(gridId, solutions);
+    }
+    const found = sessions.foundWords(gridId);
+    const unfound = solutions.filter((s) => !found.has(s.word));
+    if (unfound.length === 0) return res.status(400).json({ error: "no unfound words", code: "NO_HINT" });
+    const pick = unfound[Math.floor(Math.random() * unfound.length)];
+    const newTotal = sessions.penalize(gridId, HINT_COST);
+    res.json({ word: pick.word, path: pick.path, cost: HINT_COST, total: newTotal });
   });
 
   app.post("/api/validate", validateLimiter, (req, res) => {
