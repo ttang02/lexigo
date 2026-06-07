@@ -7,6 +7,7 @@ import { solve } from "./solver.js";
 import { buildBots } from "./bots.js";
 import { SolveCache, PlaySessionStore } from "./gridCache.js";
 import { createRateLimiter } from "./rateLimit.js";
+import { RoomStore } from "./rooms.js";
 
 // At least one alphanumeric; only alnum, space, underscore, hyphen; 1-20 chars.
 const PSEUDO_RE = /^(?=.*[A-Za-z0-9])[A-Za-z0-9_\- ]{1,20}$/;
@@ -165,6 +166,52 @@ export function buildApp({
   app.get("/api/scores", scoreReadLimiter, (req, res) => {
     const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
     res.json(db.topScores(limit));
+  });
+
+  // ─── 1v1 Rooms ───────────────────────────────────────────────
+  const rooms = new RoomStore();
+  const roomLimiter = createRateLimiter({ windowMs: 60_000, max: 20 });
+
+  // Create room (host)
+  app.post("/api/rooms", roomLimiter, (_req, res) => {
+    const grid = generateGrid();
+    cache.set(grid.gridId, grid.cells);
+    const room = rooms.create({ gridId: grid.gridId });
+    res.json({ code: room.code, gridId: grid.gridId, cells: grid.cells });
+  });
+
+  // Join room by code (guest or host rejoining)
+  app.post("/api/rooms/join", roomLimiter, (req, res) => {
+    const { code, pseudo } = req.body || {};
+    const result = rooms.join(String(code || "").toUpperCase(), pseudo);
+    if (!result) return res.status(400).json({ error: "Room not found or full", code: "ROOM_ERROR" });
+    const { playerId, room } = result;
+    const cells = cache.get(room.gridId);
+    if (!cells) return res.status(400).json({ error: "Grid expired", code: "GRID_MISSING" });
+    res.json({ code: room.code, gridId: room.gridId, cells, playerId });
+  });
+
+  // SSE — live room state (player scores)
+  app.get("/api/rooms/:code/live", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = rooms.get(code);
+    if (!room) return res.status(404).json({ error: "Room not found" });
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+    res.write(`data: ${JSON.stringify(rooms.publicState(room))}\n\n`);
+    rooms.addClient(code, res);
+    req.on("close", () => rooms.removeClient(code, res));
+  });
+
+  // Push live score update (called after each validated word)
+  app.post("/api/rooms/:code/score", roomLimiter, (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const { playerId, score } = req.body || {};
+    const room = rooms.updateScore(code, playerId, Number(score) || 0);
+    if (!room) return res.status(400).json({ error: "Invalid room or player", code: "ROOM_ERROR" });
+    res.json({ ok: true });
   });
 
   app.use((err, _req, res, _next) => {

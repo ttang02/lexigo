@@ -11,7 +11,7 @@ const item = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } },
 };
 
-export function Menu({ onPlay, onLeaderboard, onPlayBombe, onPlayDaily }) {
+export function Menu({ onPlay, onLeaderboard, onPlayBombe, onPlayDaily, onPlayMulti }) {
   const reduced = usePrefersReducedMotion();
   return (
     <motion.section
@@ -52,6 +52,13 @@ export function Menu({ onPlay, onLeaderboard, onPlayBombe, onPlayDaily }) {
         className="border-2 border-accent text-accent font-display font-bold px-8 py-3 rounded-xl text-lg hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-colors"
       >
         📅 Défi du jour
+      </motion.button>
+      <motion.button
+        variants={reduced ? undefined : item}
+        onClick={onPlayMulti}
+        className="border-2 border-primary/60 text-primary font-display font-bold px-8 py-3 rounded-xl text-lg hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-colors"
+      >
+        ⚔️ 1v1 — Défi ami
       </motion.button>
       <motion.button
         variants={reduced ? undefined : item}

@@ -5,6 +5,7 @@ import { Game } from "./screens/Game.jsx";
 import { End } from "./screens/End.jsx";
 import { LeaderboardScreen } from "./screens/LeaderboardScreen.jsx";
 import { RobotReplay } from "./screens/RobotReplay.jsx";
+import { MultiScreen } from "./screens/MultiScreen.jsx";
 import { HelpButton } from "./components/HelpButton.jsx";
 import { ThemeToggle } from "./components/ThemeToggle.jsx";
 
@@ -54,6 +55,7 @@ export default function App() {
               onPlay={() => startGame("normal")}
               onPlayBombe={() => startGame("bombe")}
               onPlayDaily={() => startGame("daily")}
+              onPlayMulti={() => setScreen("multi")}
               onLeaderboard={() => setScreen("leaderboard")}
             />
           </Screen>
@@ -88,6 +90,11 @@ export default function App() {
               cells={gameResult.cells}
               onDone={() => setScreen("end")}
             />
+          </Screen>
+        )}
+        {screen === "multi" && (
+          <Screen key="multi" label="Mode 1v1">
+            <MultiScreen onMenu={() => setScreen("menu")} />
           </Screen>
         )}
       </AnimatePresence>
