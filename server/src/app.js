@@ -127,6 +127,27 @@ export function buildApp({
     res.json({ valid: true, score, total });
   });
 
+  // SSE live leaderboard — broadcast on each score submission.
+  const liveClients = new Set();
+  function broadcastLeaderboard() {
+    if (liveClients.size === 0) return;
+    const payload = `data: ${JSON.stringify(db.topScores(20))}\n\n`;
+    for (const client of liveClients) {
+      try { client.write(payload); } catch { liveClients.delete(client); }
+    }
+  }
+
+  app.get("/api/scores/live", scoreReadLimiter, (req, res) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+    // Send current state immediately
+    res.write(`data: ${JSON.stringify(db.topScores(20))}\n\n`);
+    liveClients.add(res);
+    req.on("close", () => liveClients.delete(res));
+  });
+
   app.post("/api/scores", scoreWriteLimiter, (req, res) => {
     const { pseudo, gridId } = req.body || {};
     const cleanPseudo = typeof pseudo === "string" ? pseudo.trim().replace(/\s+/g, " ") : "";
@@ -137,6 +158,7 @@ export function buildApp({
     db.upsertScore({ pseudo: cleanPseudo, score });
     const rank = db.rankOf(cleanPseudo);
     const total = db.countScores();
+    broadcastLeaderboard(); // push update to all live watchers
     res.json({ ok: true, score, rank, total });
   });
 
