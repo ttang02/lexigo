@@ -4,6 +4,7 @@ import { EndForm } from "../components/EndForm.jsx";
 import { Leaderboard } from "../components/Leaderboard.jsx";
 import { submitScore, fetchLeaderboard, fetchSolution } from "../api.js";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
+import { updateStreak, computeBadges } from "../utils/streak.js";
 
 // --- Stats helpers ---
 function bestWord(words) {
@@ -125,6 +126,8 @@ export function End({ total, gridId, bots = [], words = [], onRestart, onMenu, o
   const [board, setBoard] = useState([]);
   const [submitError, setSubmitError] = useState(null);
   const [solutions, setSolutions] = useState(null);
+  const [badges, setBadges] = useState([]);
+  const [streakInfo, setStreakInfo] = useState(null);
 
   useEffect(() => {
     if (!submitted) return;
@@ -145,9 +148,15 @@ export function End({ total, gridId, bots = [], words = [], onRestart, onMenu, o
     setSubmitError(null);
     try {
       const r = await submitScore({ pseudo, gridId });
+      const score = r.score ?? total;
       setRank(r.rank);
-      setFinalScore(r.score ?? total);
+      setFinalScore(score);
       setPlayerTotal(r.total ?? null);
+      // Streak + badges (localStorage, client-only)
+      const { streak, bestStreak, isNewDay } = updateStreak();
+      setStreakInfo({ streak, bestStreak, isNewDay });
+      const botsBeaten = bots.filter((b) => score > b.total).length;
+      setBadges(computeBadges({ score, words, botsBeaten, botsTotal: bots.length, streak }));
       setSubmitted(true);
     } catch (e) {
       setSubmitError(
@@ -215,6 +224,31 @@ export function End({ total, gridId, bots = [], words = [], onRestart, onMenu, o
           <span className="text-accent font-bold">{botsBeaten}</span>{" "}
           robot{bots.length > 1 ? "s" : ""} sur {bots.length}
         </p>
+      )}
+
+      {/* Streak */}
+      {streakInfo && streakInfo.streak >= 2 && (
+        <p className="text-center text-sm">
+          <span aria-hidden="true">🔥 </span>
+          <span className="text-accent font-bold">{streakInfo.streak} jours</span>
+          <span className="text-text-muted"> de suite{streakInfo.bestStreak > streakInfo.streak ? ` · record ${streakInfo.bestStreak}j` : streakInfo.streak === streakInfo.bestStreak ? " · nouveau record !" : ""}</span>
+        </p>
+      )}
+
+      {/* Badges */}
+      {badges.length > 0 && (
+        <div className="flex flex-wrap gap-2 justify-center">
+          {badges.map((b) => (
+            <span
+              key={b.id}
+              className="flex items-center gap-1 bg-surface-2 px-3 py-1 rounded-full text-sm"
+              title={b.label}
+            >
+              <span aria-hidden="true">{b.emoji}</span>
+              <span className="text-text-muted">{b.label}</span>
+            </span>
+          ))}
+        </div>
       )}
 
       {/* Stats + share */}
