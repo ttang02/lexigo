@@ -9,6 +9,11 @@ export async function fetchGrid() {
   return json(r);
 }
 
+export async function fetchDailyGrid() {
+  const r = await fetch("/api/daily");
+  return json(r);
+}
+
 export async function validateWord({ gridId, path, word }) {
   const r = await fetch("/api/validate", {
     method: "POST",

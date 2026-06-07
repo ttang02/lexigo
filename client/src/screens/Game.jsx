@@ -6,15 +6,16 @@ import { WordList } from "../components/WordList.jsx";
 import { FloatingScore } from "../components/FloatingScore.jsx";
 import { usePathSelection } from "../hooks/usePathSelection.js";
 import { useTimer } from "../hooks/useTimer.js";
-import { fetchGrid, validateWord, fetchBots, fetchHint } from "../api.js";
+import { fetchGrid, fetchDailyGrid, validateWord, fetchBots, fetchHint } from "../api.js";
 import { BonusLegend } from "../components/BonusLegend.jsx";
 import { BotsPanel } from "../components/BotsPanel.jsx";
 
-const DURATIONS = { normal: 120_000, bombe: 60_000 };
+const DURATIONS = { normal: 120_000, bombe: 60_000, daily: 120_000 };
 
 export function Game({ onEnd, mode = "normal" }) {
   const DURATION = DURATIONS[mode] ?? DURATIONS.normal;
   const isBombe = mode === "bombe";
+  const isDaily = mode === "daily";
 
   const [grid, setGrid] = useState(null);
   const [words, setWords] = useState([]);
@@ -46,7 +47,8 @@ export function Game({ onEnd, mode = "normal" }) {
     setGrid(null);
     setGridError(null);
     setBots([]);
-    fetchGrid()
+    const gridFetch = isDaily ? fetchDailyGrid() : fetchGrid();
+    gridFetch
       .then((g) => {
         setGrid(g);
         fetchBots(g.gridId).then((r) => setBots(r.bots)).catch(() => {});
@@ -130,6 +132,7 @@ export function Game({ onEnd, mode = "normal" }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {isBombe && <span aria-hidden="true" className="text-2xl animate-pulse">💣</span>}
+            {isDaily && <span aria-hidden="true" className="text-xl">📅</span>}
             <Timer remainingMs={remainingMs} totalMs={DURATION} urgent={isBombe} />
           </div>
           <span className="font-display font-bold text-xl text-primary tabular-nums">

@@ -53,6 +53,7 @@ export default function App() {
             <Menu
               onPlay={() => startGame("normal")}
               onPlayBombe={() => startGame("bombe")}
+              onPlayDaily={() => startGame("daily")}
               onLeaderboard={() => setScreen("leaderboard")}
             />
           </Screen>

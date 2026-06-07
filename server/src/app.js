@@ -49,6 +49,22 @@ export function buildApp({
     res.json(grid);
   });
 
+  // Daily challenge — same grid for all players each calendar day.
+  // Seed = YYYYMMDD integer → deterministic mulberry32 grid.
+  let _daily = null; // { date, gridId, cells }
+  const dailyLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
+  app.get("/api/daily", dailyLimiter, (_req, res) => {
+    const today = new Date().toISOString().slice(0, 10); // "2026-06-07"
+    if (!_daily || _daily.date !== today) {
+      const seed = Number(today.replace(/-/g, "")); // 20260607
+      const { cells } = generateGrid({ seed });
+      _daily = { date: today, gridId: `daily-${today}`, cells };
+    }
+    // Refresh in main cache so validate/bots/solve routes can access it.
+    cache.set(_daily.gridId, _daily.cells);
+    res.json({ gridId: _daily.gridId, cells: _daily.cells, daily: true, date: today });
+  });
+
   app.get("/api/solve", solveLimiter, (req, res) => {
     const { gridId } = req.query;
     const cells = cache.get(gridId);
