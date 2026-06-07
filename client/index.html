@@ -7,6 +7,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
     <title>Ruzzle FR</title>
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#8B5CF6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+    <!-- Anti-FOUC: apply saved theme before paint -->
+    <script>
+      (function () {
+        var t = localStorage.getItem("ruzzle-theme") ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
   </head>
   <body class="text-text-base font-body">
     <div id="root"></div>

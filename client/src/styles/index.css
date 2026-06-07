@@ -2,12 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Theme tokens (RGB channels for Tailwind opacity modifiers) ─── */
+:root {
+  /* dark (default) */
+  --c-bg: 15 11 31;
+  --c-surface: 26 21 48;
+  --c-surface-2: 36 29 64;
+  --c-primary: 139 92 246;
+  --c-accent: 251 191 36;
+  --c-success: 16 185 129;
+  --c-danger: 239 68 68;
+  --c-text-base: 244 241 255;
+  --c-text-muted: 155 150 181;
+  --body-gradient: radial-gradient(ellipse 120% 60% at 50% -5%, #4A259A 0%, #201258 50%, #100A30 100%);
+}
+
+[data-theme="light"] {
+  --c-bg: 248 245 255;
+  --c-surface: 237 233 248;
+  --c-surface-2: 221 216 240;
+  --c-primary: 124 58 237;
+  --c-accent: 217 119 6;
+  --c-success: 5 150 105;
+  --c-danger: 220 38 38;
+  --c-text-base: 26 17 64;
+  --c-text-muted: 107 100 136;
+  --body-gradient: radial-gradient(ellipse 120% 60% at 50% -5%, #C4B5FD 0%, #EDE9F8 50%, #F8F5FF 100%);
+}
+
 @layer base {
   html { -webkit-font-smoothing: antialiased; }
   body {
     font-feature-settings: "tnum" 0;
-    background: radial-gradient(ellipse 120% 60% at 50% -5%, #4A259A 0%, #201258 50%, #100A30 100%);
+    background: var(--body-gradient);
     background-attachment: fixed;
+    transition: background 0.25s ease;
   }
   .tabular { font-variant-numeric: tabular-nums; }
 }

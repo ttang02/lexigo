@@ -1,0 +1,13 @@
+{
+  "name": "Ruzzle FR",
+  "short_name": "Ruzzle",
+  "description": "Trouve le maximum de mots en 2 minutes",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0B1F",
+  "theme_color": "#8B5CF6",
+  "lang": "fr",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
