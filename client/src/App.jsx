@@ -31,10 +31,10 @@ function Screen({ children, label }) {
 
 export default function App() {
   const [screen, setScreen] = useState("menu");
-  const [gameResult, setGameResult] = useState({ total: 0, gridId: null, cells: [], bots: [] });
+  const [gameResult, setGameResult] = useState({ total: 0, gridId: null, cells: [], bots: [], words: [] });
 
-  function handleGameEnd({ total, gridId, cells, bots }) {
-    setGameResult({ total, gridId: gridId ?? null, cells: cells ?? [], bots: bots ?? [] });
+  function handleGameEnd({ total, gridId, cells, bots, words }) {
+    setGameResult({ total, gridId: gridId ?? null, cells: cells ?? [], bots: bots ?? [], words: words ?? [] });
     setScreen("end");
   }
 
@@ -57,6 +57,7 @@ export default function App() {
               total={gameResult.total}
               gridId={gameResult.gridId}
               bots={gameResult.bots}
+              words={gameResult.words}
               onRestart={() => setScreen("game")}
               onMenu={() => setScreen("menu")}
               onRobotReplay={() => setScreen("robot")}
