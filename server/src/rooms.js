@@ -53,6 +53,16 @@ export class RoomStore {
     return { playerId, room };
   }
 
+  // Resets scores to 0 and points the room at a new grid. Returns the room or null.
+  rematch(code, gridId) {
+    const room = this.get(code);
+    if (!room) return null;
+    for (const player of room.players.values()) player.score = 0;
+    room.gridId = gridId;
+    this._broadcast(room);
+    return room;
+  }
+
   updateScore(code, playerId, score) {
     const room = this.get(code);
     if (!room) return null;

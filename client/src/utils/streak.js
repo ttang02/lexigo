@@ -1,4 +1,4 @@
-const KEY = "ruzzle-streak";
+const KEY = "lexigo-streak";
 
 function today() {
   return new Date().toISOString().slice(0, 10);

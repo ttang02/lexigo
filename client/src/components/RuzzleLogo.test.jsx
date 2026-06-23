@@ -1,19 +1,20 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { RuzzleLogo } from "./RuzzleLogo.jsx";
+import { LexigoLogo } from "./RuzzleLogo.jsx";
 
-describe("RuzzleLogo", () => {
-  it("renders all 6 letters R U Z Z L E", () => {
-    render(<RuzzleLogo />);
-    expect(screen.getByText("R")).toBeInTheDocument();
-    expect(screen.getByText("U")).toBeInTheDocument();
-    expect(screen.getAllByText("Z")).toHaveLength(2);
+describe("LexigoLogo", () => {
+  it("renders all 6 letters L E X I G O", () => {
+    render(<LexigoLogo />);
     expect(screen.getByText("L")).toBeInTheDocument();
     expect(screen.getByText("E")).toBeInTheDocument();
+    expect(screen.getByText("X")).toBeInTheDocument();
+    expect(screen.getByText("I")).toBeInTheDocument();
+    expect(screen.getByText("G")).toBeInTheDocument();
+    expect(screen.getByText("O")).toBeInTheDocument();
   });
 
   it("has accessible label", () => {
-    render(<RuzzleLogo />);
-    expect(screen.getByRole("img", { name: /ruzzle/i })).toBeInTheDocument();
+    render(<LexigoLogo />);
+    expect(screen.getByRole("img", { name: /lexigo/i })).toBeInTheDocument();
   });
 });

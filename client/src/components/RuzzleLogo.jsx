@@ -1,13 +1,13 @@
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
 
-const LETTERS = ["R", "U", "Z", "Z", "L", "E"];
+const LETTERS = ["L", "E", "X", "I", "G", "O"];
 const TILE = 56;
 const GAP = 8;
 const COLS = 3;
 const W = COLS * TILE + (COLS - 1) * GAP; // 184
 const H = 2 * TILE + GAP;                  // 120
 
-export function RuzzleLogo() {
+export function LexigoLogo() {
   const reduced = usePrefersReducedMotion();
 
   return (
@@ -16,7 +16,7 @@ export function RuzzleLogo() {
       height={H}
       viewBox={`0 0 ${W} ${H}`}
       className={reduced ? "" : "logo-svg-glow"}
-      aria-label="Ruzzle"
+      aria-label="Lexigo"
       role="img"
     >
       {LETTERS.map((letter, i) => {

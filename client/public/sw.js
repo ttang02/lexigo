@@ -1,4 +1,4 @@
-const CACHE = "ruzzle-v1";
+const CACHE = "lexigo-v1";
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["/"]).catch(() => {})));

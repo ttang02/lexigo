@@ -214,6 +214,26 @@ export function buildApp({
     res.json({ ok: true });
   });
 
+  // Fetch current grid cells for a room (used by the opponent after a rematch).
+  app.get("/api/rooms/:code", roomLimiter, (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = rooms.get(code);
+    if (!room) return res.status(404).json({ error: "Room not found", code: "ROOM_ERROR" });
+    const cells = cache.get(room.gridId);
+    if (!cells) return res.status(400).json({ error: "Grid expired", code: "GRID_MISSING" });
+    res.json({ code: room.code, gridId: room.gridId, cells });
+  });
+
+  // Reset scores and assign a new grid for a rematch, keeping the same room/players.
+  app.post("/api/rooms/:code/rematch", roomLimiter, (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const grid = generateGrid();
+    cache.set(grid.gridId, grid.cells);
+    const room = rooms.rematch(code, grid.gridId);
+    if (!room) return res.status(400).json({ error: "Invalid room", code: "ROOM_ERROR" });
+    res.json({ gridId: grid.gridId, cells: grid.cells });
+  });
+
   app.use((err, _req, res, _next) => {
     console.error(err);
     res.status(500).json({ error: "internal error", code: "INTERNAL" });

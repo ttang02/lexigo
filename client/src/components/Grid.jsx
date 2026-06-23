@@ -81,7 +81,7 @@ function GridImpl({
       ref={containerRef}
       className="relative grid grid-cols-4 gap-2 w-full max-w-[480px] aspect-square mx-auto p-2 rounded-2xl bg-surface/40"
       role="group"
-      aria-label="Grille Ruzzle — flèches pour naviguer, Entrée pour sélectionner une lettre"
+      aria-label="Grille Lexigo — flèches pour naviguer, Entrée pour sélectionner une lettre"
       onKeyDown={onKeyDown}
       onFocusCapture={onFocusCapture}
       variants={reduced ? undefined : gridVariants}

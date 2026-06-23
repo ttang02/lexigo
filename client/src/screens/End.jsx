@@ -5,6 +5,8 @@ import { Leaderboard } from "../components/Leaderboard.jsx";
 import { submitScore, fetchLeaderboard, fetchSolution } from "../api.js";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
 import { updateStreak, computeBadges } from "../utils/streak.js";
+import { playVictory } from "../utils/sound.js";
+import { Confetti } from "../components/Confetti.jsx";
 
 // --- Stats helpers ---
 function bestWord(words) {
@@ -37,7 +39,7 @@ function buildShareText({ score, rank, playerTotal, botsBeaten, botsTotal, words
     statsLine,
     bestLine,
     "",
-    "ruzzle.app",
+    "lexigo.app",
   ].filter(Boolean).join("\n");
 }
 
@@ -152,6 +154,7 @@ export function End({ total, gridId, bots = [], words = [], onRestart, onMenu, o
       setRank(r.rank);
       setFinalScore(score);
       setPlayerTotal(r.total ?? null);
+      if (r.rank === 1) playVictory();
       // Streak + badges (localStorage, client-only)
       const { streak, bestStreak, isNewDay } = updateStreak();
       setStreakInfo({ streak, bestStreak, isNewDay });
@@ -191,6 +194,7 @@ export function End({ total, gridId, bots = [], words = [], onRestart, onMenu, o
 
   return (
     <section className="max-w-md mx-auto flex flex-col gap-4">
+      {rank === 1 && <Confetti />}
       {/* Score + rank */}
       <div className="flex flex-col items-center gap-1 py-2">
         <motion.div

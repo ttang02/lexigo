@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Game } from "./Game.jsx";
 import { End } from "./End.jsx";
+import { Confetti } from "../components/Confetti.jsx";
+import { useLiveSSE } from "../hooks/useLiveSSE.js";
+import { playVictory } from "../utils/sound.js";
 
 const API = (path, body) =>
   fetch(path, {
@@ -10,19 +13,8 @@ const API = (path, body) =>
     body: JSON.stringify(body),
   }).then((r) => r.json());
 
-// Live room SSE hook
 function useRoomLive(code, onUpdate) {
-  const esRef = useRef(null);
-  useEffect(() => {
-    if (!code) return;
-    const es = new EventSource(`/api/rooms/${code}/live`);
-    esRef.current = es;
-    es.onmessage = (e) => {
-      try { onUpdate(JSON.parse(e.data)); } catch { /* ignore */ }
-    };
-    es.onerror = () => es.close();
-    return () => es.close();
-  }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
+  return useLiveSSE(code ? `/api/rooms/${code}/live` : null, onUpdate);
 }
 
 export function MultiScreen({ onMenu }) {
@@ -33,13 +25,38 @@ export function MultiScreen({ onMenu }) {
   const [roomInfo, setRoomInfo] = useState(null); // { code, gridId, cells, playerId }
   const [roomState, setRoomState] = useState(null);
   const [gameResult, setGameResult] = useState(null);
+  const victoryPlayedRef = useRef(false);
 
-  useRoomLive(roomInfo?.code, (state) => {
+  const live = useRoomLive(roomInfo?.code, (state) => {
     setRoomState(state);
     if (phase === "waiting" && state.playerCount >= 2) {
       setPhase("playing");
+    } else if (phase === "done" && roomInfo && state.gridId !== roomInfo.gridId) {
+      // Opponent triggered a rematch — fetch the new grid and rejoin.
+      fetch(`/api/rooms/${state.code}`)
+        .then((r) => r.json())
+        .then((g) => {
+          if (!g.cells) return;
+          victoryPlayedRef.current = false;
+          setRoomInfo((ri) => ({ ...ri, gridId: g.gridId, cells: g.cells }));
+          setGameResult(null);
+          setPhase("playing");
+        })
+        .catch(() => {});
     }
   });
+
+  async function handleRematch() {
+    setError(null);
+    try {
+      const r = await API(`/api/rooms/${roomInfo.code}/rematch`, {});
+      if (!r.gridId) { setError("Erreur rematch."); return; }
+      victoryPlayedRef.current = false;
+      setRoomInfo((ri) => ({ ...ri, gridId: r.gridId, cells: r.cells }));
+      setGameResult(null);
+      setPhase("playing");
+    } catch { setError("Erreur rematch."); }
+  }
 
   async function handleCreate() {
     setError(null);
@@ -163,8 +180,13 @@ export function MultiScreen({ onMenu }) {
     const myScore = gameResult?.total ?? 0;
     const opponent = roomState?.players?.find((p) => p.id !== roomInfo?.playerId);
     const won = opponent ? myScore > opponent.score : null;
+    if (won === true && !victoryPlayedRef.current) {
+      victoryPlayedRef.current = true;
+      playVictory();
+    }
     return (
       <section className="max-w-md mx-auto flex flex-col items-center gap-4">
+        {won === true && <Confetti />}
         <div className="text-6xl">{won === true ? "🏆" : won === false ? "😅" : "🤝"}</div>
         <h2 className="font-display text-2xl font-bold">
           {won === true ? "Victoire !" : won === false ? "Défaite…" : "Égalité !"}
@@ -175,6 +197,18 @@ export function MultiScreen({ onMenu }) {
             <> · {opponent.pseudo} : <span className="text-text-base font-bold">{opponent.score}</span> pts</>
           )}
         </p>
+        {!live && (
+          <p className="text-text-muted text-xs">🔄 Reconnexion…</p>
+        )}
+        {opponent && (
+          <button
+            type="button"
+            onClick={handleRematch}
+            className="bg-primary text-bg font-display font-bold px-6 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            🔁 Rejouer contre {opponent.pseudo}
+          </button>
+        )}
         <End
           total={myScore}
           gridId={roomInfo?.gridId}

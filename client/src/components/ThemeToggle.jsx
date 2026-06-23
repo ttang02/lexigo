@@ -7,7 +7,7 @@ export function ThemeToggle() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem("ruzzle-theme", theme);
+    localStorage.setItem("lexigo-theme", theme);
   }, [theme]);
 
   return (

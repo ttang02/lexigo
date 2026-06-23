@@ -1,29 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Leaderboard } from "../components/Leaderboard.jsx";
+import { useLiveSSE } from "../hooks/useLiveSSE.js";
 
 export function LeaderboardScreen({ onMenu }) {
   const [rows, setRows] = useState([]);
-  const [live, setLive] = useState(false);
-  const esRef = useRef(null);
-
-  useEffect(() => {
-    const es = new EventSource("/api/scores/live");
-    esRef.current = es;
-
-    es.onopen = () => setLive(true);
-    es.onmessage = (e) => {
-      try { setRows(JSON.parse(e.data)); } catch { /* ignore */ }
-    };
-    es.onerror = () => {
-      setLive(false);
-      es.close();
-    };
-
-    return () => {
-      es.close();
-      setLive(false);
-    };
-  }, []);
+  const live = useLiveSSE("/api/scores/live", setRows);
 
   return (
     <section className="max-w-md mx-auto flex flex-col gap-4">

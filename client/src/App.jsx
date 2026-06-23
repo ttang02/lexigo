@@ -8,6 +8,7 @@ import { RobotReplay } from "./screens/RobotReplay.jsx";
 import { MultiScreen } from "./screens/MultiScreen.jsx";
 import { HelpButton } from "./components/HelpButton.jsx";
 import { ThemeToggle } from "./components/ThemeToggle.jsx";
+import { SoundToggle } from "./components/SoundToggle.jsx";
 
 const SCREEN = { duration: 0.25, ease: [0.22, 1, 0.36, 1] };
 
@@ -100,6 +101,7 @@ export default function App() {
       </AnimatePresence>
       <HelpButton />
       <ThemeToggle />
+      <SoundToggle />
     </main>
   );
 }

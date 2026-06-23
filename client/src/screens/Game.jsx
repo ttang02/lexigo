@@ -9,6 +9,7 @@ import { useTimer } from "../hooks/useTimer.js";
 import { fetchGrid, fetchDailyGrid, validateWord, fetchBots, fetchHint } from "../api.js";
 import { BonusLegend } from "../components/BonusLegend.jsx";
 import { BotsPanel } from "../components/BotsPanel.jsx";
+import { playClick, playValid, playError } from "../utils/sound.js";
 
 const DURATIONS = { normal: 120_000, bombe: 60_000, daily: 120_000 };
 
@@ -60,6 +61,7 @@ export function Game({ onEnd, mode = "normal" }) {
 
   const handleTap = useCallback((i) => {
     if (!running) start();
+    playClick();
     tap(i);
   }, [running, start, tap]);
 
@@ -76,6 +78,7 @@ export function Game({ onEnd, mode = "normal" }) {
     try {
       const r = await validateWord({ gridId: grid.gridId, path, word });
       if (r.valid) {
+        playValid();
         setWords((arr) => (arr.some((w) => w.word === word) ? arr : [...arr, { word, score: r.score }]));
         setFeedback({ type: "ok", word, score: r.score });
         setFlashPath([...path]);
@@ -87,9 +90,11 @@ export function Game({ onEnd, mode = "normal" }) {
           setTimeout(() => setFloatingScore(null), 650),
         ];
       } else {
+        playError();
         setFeedback({ type: "no", word });
       }
     } catch (e) {
+      playError();
       setFeedback({ type: "err", message: e.message });
     } finally {
       submittingRef.current = false;

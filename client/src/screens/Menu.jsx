@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion.js";
-import { RuzzleLogo } from "../components/RuzzleLogo.jsx";
+import { LexigoLogo } from "../components/RuzzleLogo.jsx";
 
 const container = {
   hidden: {},
@@ -21,7 +21,7 @@ export function Menu({ onPlay, onLeaderboard, onPlayBombe, onPlayDaily, onPlayMu
       animate="visible"
     >
       <motion.div variants={reduced ? undefined : item}>
-        <RuzzleLogo />
+        <LexigoLogo />
       </motion.div>
       <motion.p
         variants={reduced ? undefined : item}
