@@ -1,6 +1,6 @@
-# Ruzzle FR
+# Lexigo
 
-Implémentation web du jeu de mots **Ruzzle** en français. Trouve un maximum de mots dans une grille 4×4 en glissant d'une lettre à l'autre avant la fin du timer, marque des points selon la longueur des mots et les bonus de cases, puis compare ton score sur un leaderboard partagé. Un mode **Replay du robot** rejoue ensuite la solution optimale calculée côté serveur, tuile par tuile.
+Implémentation web du jeu de mots **Lexigo** en français. Trouve un maximum de mots dans une grille 4×4 en glissant d'une lettre à l'autre avant la fin du timer, marque des points selon la longueur des mots et les bonus de cases, puis compare ton score sur un leaderboard partagé. Un mode **Replay du robot** rejoue ensuite la solution optimale calculée côté serveur, tuile par tuile.
 
 ## Fonctionnalités
 
