@@ -119,7 +119,7 @@ function StatsPanel({ words, solutions, finalScore, rank, playerTotal, botsBeate
 }
 
 // --- Main End screen ---
-export function End({ total, gridId, mode = "normal", bots = [], words = [], onRestart, onMenu, onRobotReplay }) {
+export function End({ total, gridId, mode = "normal", bots = [], words = [], onRestart, onMenu, onRobotReplay, allowSubmit = true }) {
   const reduced = usePrefersReducedMotion();
   const [submitted, setSubmitted] = useState(false);
   const [rank, setRank] = useState(null);
@@ -173,7 +173,7 @@ export function End({ total, gridId, mode = "normal", bots = [], words = [], onR
   if (!submitted) {
     return (
       <div className="flex flex-col gap-4 max-w-md mx-auto">
-        <EndForm score={total} onSubmit={handleSubmit} />
+        {allowSubmit && <EndForm score={total} onSubmit={handleSubmit} />}
         {submitError && (
           <p role="alert" className="text-danger text-sm text-center">{submitError}</p>
         )}
@@ -184,6 +184,15 @@ export function End({ total, gridId, mode = "normal", bots = [], words = [], onR
             className="border border-surface-2 text-text-muted px-6 py-2 rounded-lg hover:border-primary/40 hover:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-colors duration-150 text-sm text-center"
           >
             Voir la solution du robot
+          </button>
+        )}
+        {!allowSubmit && onRestart && (
+          <button
+            type="button"
+            onClick={onRestart}
+            className="bg-primary text-bg font-bold px-6 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Nouvelle partie
           </button>
         )}
         <button

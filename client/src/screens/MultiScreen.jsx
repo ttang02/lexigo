@@ -218,6 +218,7 @@ export function MultiScreen({ onMenu }) {
           onRestart={() => { setPhase("lobby"); setRoomInfo(null); setRoomState(null); setGameResult(null); }}
           onMenu={onMenu}
           onRobotReplay={null}
+          allowSubmit={false}
         />
       </section>
     );
