@@ -13,7 +13,7 @@ import { playClick, playValid, playError } from "../utils/sound.js";
 
 const DURATIONS = { normal: 120_000, bombe: 60_000, daily: 120_000 };
 
-export function Game({ onEnd, mode = "normal" }) {
+export function Game({ onEnd, mode = "normal", onMenu }) {
   const DURATION = DURATIONS[mode] ?? DURATIONS.normal;
   const isBombe = mode === "bombe";
   const isDaily = mode === "daily";
@@ -136,6 +136,16 @@ export function Game({ onEnd, mode = "normal" }) {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
+            {onMenu && (
+              <button
+                type="button"
+                onClick={() => { if (window.confirm("Quitter la partie ? Ton score sera perdu.")) onMenu(); }}
+                aria-label="Quitter la partie"
+                className="bg-surface border border-surface-2 w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-colors"
+              >
+                ←
+              </button>
+            )}
             {isBombe && <span aria-hidden="true" className="text-2xl animate-pulse">💣</span>}
             {isDaily && <span aria-hidden="true" className="text-xl">📅</span>}
             <Timer remainingMs={remainingMs} totalMs={DURATION} urgent={isBombe} />

@@ -63,7 +63,7 @@ export default function App() {
         )}
         {screen === "game" && (
           <Screen key="game" label="Partie en cours">
-            <Game onEnd={handleGameEnd} mode={gameMode} />
+            <Game onEnd={handleGameEnd} mode={gameMode} onMenu={() => setScreen("menu")} />
           </Screen>
         )}
         {screen === "end" && (
@@ -71,6 +71,7 @@ export default function App() {
             <End
               total={gameResult.total}
               gridId={gameResult.gridId}
+              mode={gameMode}
               bots={gameResult.bots}
               words={gameResult.words}
               onRestart={() => setScreen("game")}

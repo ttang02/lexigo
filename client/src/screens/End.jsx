@@ -119,7 +119,7 @@ function StatsPanel({ words, solutions, finalScore, rank, playerTotal, botsBeate
 }
 
 // --- Main End screen ---
-export function End({ total, gridId, bots = [], words = [], onRestart, onMenu, onRobotReplay }) {
+export function End({ total, gridId, mode = "normal", bots = [], words = [], onRestart, onMenu, onRobotReplay }) {
   const reduced = usePrefersReducedMotion();
   const [submitted, setSubmitted] = useState(false);
   const [rank, setRank] = useState(null);
@@ -134,7 +134,7 @@ export function End({ total, gridId, bots = [], words = [], onRestart, onMenu, o
   useEffect(() => {
     if (!submitted) return;
     const ctrl = new AbortController();
-    fetchLeaderboard(20)
+    fetchLeaderboard(mode, 20)
       .then((rows) => { if (!ctrl.signal.aborted) setBoard(rows); })
       .catch(() => {});
     // Fetch solutions for stats (missed words, coverage %)
@@ -149,7 +149,7 @@ export function End({ total, gridId, bots = [], words = [], onRestart, onMenu, o
   async function handleSubmit(pseudo) {
     setSubmitError(null);
     try {
-      const r = await submitScore({ pseudo, gridId });
+      const r = await submitScore({ pseudo, gridId, mode });
       const score = r.score ?? total;
       setRank(r.rank);
       setFinalScore(score);
@@ -186,6 +186,13 @@ export function End({ total, gridId, bots = [], words = [], onRestart, onMenu, o
             Voir la solution du robot
           </button>
         )}
+        <button
+          type="button"
+          onClick={onMenu}
+          className="text-text-muted text-sm text-center hover:text-text-base transition-colors"
+        >
+          ← Retour au menu
+        </button>
       </div>
     );
   }

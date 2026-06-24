@@ -25,18 +25,18 @@ export async function validateWord({ gridId, path, word }) {
   return json(r);
 }
 
-export async function submitScore({ pseudo, gridId }) {
-  // Score is derived server-side from the play session; we only send the grid.
+export async function submitScore({ pseudo, gridId, mode = "normal" }) {
+  // Score is derived server-side from the play session; we send grid + mode.
   const r = await fetch(`${API_BASE}/api/scores`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ pseudo, gridId }),
+    body: JSON.stringify({ pseudo, gridId, mode }),
   });
   return json(r);
 }
 
-export async function fetchLeaderboard(limit = 20) {
-  const r = await fetch(`${API_BASE}/api/scores?limit=${limit}`);
+export async function fetchLeaderboard(mode = "normal", limit = 20) {
+  const r = await fetch(`${API_BASE}/api/scores?mode=${mode}&limit=${limit}`);
   return json(r);
 }
 

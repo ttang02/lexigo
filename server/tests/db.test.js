@@ -24,7 +24,7 @@ describe("scores DAO", () => {
     db.upsertScore({ pseudo: "a", score: 10 });
     db.upsertScore({ pseudo: "b", score: 50 });
     db.upsertScore({ pseudo: "c", score: 30 });
-    const top = db.topScores(2);
+    const top = db.topScores("normal", 2);
     expect(top.map((r) => r.pseudo)).toEqual(["b", "c"]);
   });
   it("computes rank for a pseudo", () => {

@@ -11,6 +11,7 @@ import { RoomStore } from "./rooms.js";
 
 // At least one alphanumeric; only alnum, space, underscore, hyphen; 1-20 chars.
 const PSEUDO_RE = /^(?=.*[A-Za-z0-9])[A-Za-z0-9_\- ]{1,20}$/;
+const SCORE_MODES = new Set(["normal", "bombe", "daily"]);
 
 function buildCorsOptions() {
   const raw = process.env.CORS_ORIGIN;
@@ -128,44 +129,50 @@ export function buildApp({
     res.json({ valid: true, score, total });
   });
 
-  // SSE live leaderboard — broadcast on each score submission.
-  const liveClients = new Set();
-  function broadcastLeaderboard() {
-    if (liveClients.size === 0) return;
-    const payload = `data: ${JSON.stringify(db.topScores(20))}\n\n`;
-    for (const client of liveClients) {
-      try { client.write(payload); } catch { liveClients.delete(client); }
+  // SSE live leaderboard — per-mode broadcast on each score submission.
+  const liveClients = new Map(); // mode -> Set<res>
+  function broadcastLeaderboard(mode) {
+    const set = liveClients.get(mode);
+    if (!set || set.size === 0) return;
+    const payload = `data: ${JSON.stringify(db.topScores(mode, 20))}\n\n`;
+    for (const client of set) {
+      try { client.write(payload); } catch { set.delete(client); }
     }
   }
 
   app.get("/api/scores/live", scoreReadLimiter, (req, res) => {
+    const mode = SCORE_MODES.has(req.query.mode) ? req.query.mode : "normal";
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders();
     // Send current state immediately
-    res.write(`data: ${JSON.stringify(db.topScores(20))}\n\n`);
-    liveClients.add(res);
-    req.on("close", () => liveClients.delete(res));
+    res.write(`data: ${JSON.stringify(db.topScores(mode, 20))}\n\n`);
+    let set = liveClients.get(mode);
+    if (!set) { set = new Set(); liveClients.set(mode, set); }
+    set.add(res);
+    req.on("close", () => set.delete(res));
   });
 
   app.post("/api/scores", scoreWriteLimiter, (req, res) => {
-    const { pseudo, gridId } = req.body || {};
+    const { pseudo, gridId, mode } = req.body || {};
     const cleanPseudo = typeof pseudo === "string" ? pseudo.trim().replace(/\s+/g, " ") : "";
     if (!PSEUDO_RE.test(cleanPseudo)) return res.status(400).json({ error: "invalid pseudo", code: "PSEUDO_INVALID" });
+    const m = SCORE_MODES.has(mode) ? mode : "normal";
     // Score is authoritative from the server-side play session, not the client.
     const score = sessions.totalOf(gridId);
     if (score === null) return res.status(400).json({ error: "no active play session for grid", code: "SESSION_MISSING" });
-    db.upsertScore({ pseudo: cleanPseudo, score });
-    const rank = db.rankOf(cleanPseudo);
-    const total = db.countScores();
-    broadcastLeaderboard(); // push update to all live watchers
+    db.upsertScore({ pseudo: cleanPseudo, score, mode: m });
+    const rank = db.rankOf(cleanPseudo, m);
+    const total = db.countScores(m);
+    broadcastLeaderboard(m); // push update to this mode's live watchers
     res.json({ ok: true, score, rank, total });
   });
 
   app.get("/api/scores", scoreReadLimiter, (req, res) => {
     const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
-    res.json(db.topScores(limit));
+    const mode = SCORE_MODES.has(req.query.mode) ? req.query.mode : "normal";
+    res.json(db.topScores(mode, limit));
   });
 
   // ─── 1v1 Rooms ───────────────────────────────────────────────

@@ -20,14 +20,14 @@ describe("api", () => {
     fetch.mockResolvedValue({ ok: true, json: async () => ({ ok: true, rank: 3, score: 88 }) });
     const r = await api.submitScore({ pseudo: "a", gridId: "g-1" });
     const [, opts] = fetch.mock.calls[0];
-    expect(JSON.parse(opts.body)).toEqual({ pseudo: "a", gridId: "g-1" });
+    expect(JSON.parse(opts.body)).toEqual({ pseudo: "a", gridId: "g-1", mode: "normal" });
     expect(r.rank).toBe(3);
     expect(r.score).toBe(88);
   });
-  it("fetchLeaderboard GETs with limit", async () => {
+  it("fetchLeaderboard GETs with mode + limit", async () => {
     fetch.mockResolvedValue({ ok: true, json: async () => ([]) });
-    await api.fetchLeaderboard(20);
-    expect(fetch).toHaveBeenCalledWith("/api/scores?limit=20");
+    await api.fetchLeaderboard("normal", 20);
+    expect(fetch).toHaveBeenCalledWith("/api/scores?mode=normal&limit=20");
   });
   it("throws on non-2xx", async () => {
     fetch.mockResolvedValue({ ok: false, status: 400, json: async () => ({ error: "bad" }) });
