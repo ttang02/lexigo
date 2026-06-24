@@ -5,16 +5,17 @@ import { End } from "./End.jsx";
 import { Confetti } from "../components/Confetti.jsx";
 import { useLiveSSE } from "../hooks/useLiveSSE.js";
 import { playVictory } from "../utils/sound.js";
+import { API_BASE } from "../config.js";
 
 const API = (path, body) =>
-  fetch(path, {
+  fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   }).then((r) => r.json());
 
 function useRoomLive(code, onUpdate) {
-  return useLiveSSE(code ? `/api/rooms/${code}/live` : null, onUpdate);
+  return useLiveSSE(code ? `${API_BASE}/api/rooms/${code}/live` : null, onUpdate);
 }
 
 export function MultiScreen({ onMenu }) {
@@ -33,7 +34,7 @@ export function MultiScreen({ onMenu }) {
       setPhase("playing");
     } else if (phase === "done" && roomInfo && state.gridId !== roomInfo.gridId) {
       // Opponent triggered a rematch — fetch the new grid and rejoin.
-      fetch(`/api/rooms/${state.code}`)
+      fetch(`${API_BASE}/api/rooms/${state.code}`)
         .then((r) => r.json())
         .then((g) => {
           if (!g.cells) return;

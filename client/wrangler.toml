@@ -1,0 +1,9 @@
+# Cloudflare Workers (static assets) config for the Lexigo client.
+# `wrangler deploy` serves the built Vite app from ./dist.
+name = "lexigo"
+compatibility_date = "2026-06-23"
+
+[assets]
+directory = "./dist"
+# SPA: serve index.html for any unmatched route (client-side routing).
+not_found_handling = "single-page-application"

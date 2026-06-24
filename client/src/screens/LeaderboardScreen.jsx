@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Leaderboard } from "../components/Leaderboard.jsx";
 import { useLiveSSE } from "../hooks/useLiveSSE.js";
+import { API_BASE } from "../config.js";
 
 export function LeaderboardScreen({ onMenu }) {
   const [rows, setRows] = useState([]);
-  const live = useLiveSSE("/api/scores/live", setRows);
+  const live = useLiveSSE(`${API_BASE}/api/scores/live`, setRows);
 
   return (
     <section className="max-w-md mx-auto flex flex-col gap-4">

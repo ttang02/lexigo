@@ -1,3 +1,5 @@
+import { API_BASE } from "./config.js";
+
 async function json(res) {
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
@@ -5,17 +7,17 @@ async function json(res) {
 }
 
 export async function fetchGrid() {
-  const r = await fetch("/api/grid");
+  const r = await fetch(`${API_BASE}/api/grid`);
   return json(r);
 }
 
 export async function fetchDailyGrid() {
-  const r = await fetch("/api/daily");
+  const r = await fetch(`${API_BASE}/api/daily`);
   return json(r);
 }
 
 export async function validateWord({ gridId, path, word }) {
-  const r = await fetch("/api/validate", {
+  const r = await fetch(`${API_BASE}/api/validate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ gridId, path, word }),
@@ -25,7 +27,7 @@ export async function validateWord({ gridId, path, word }) {
 
 export async function submitScore({ pseudo, gridId }) {
   // Score is derived server-side from the play session; we only send the grid.
-  const r = await fetch("/api/scores", {
+  const r = await fetch(`${API_BASE}/api/scores`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ pseudo, gridId }),
@@ -34,22 +36,22 @@ export async function submitScore({ pseudo, gridId }) {
 }
 
 export async function fetchLeaderboard(limit = 20) {
-  const r = await fetch(`/api/scores?limit=${limit}`);
+  const r = await fetch(`${API_BASE}/api/scores?limit=${limit}`);
   return json(r);
 }
 
 export async function fetchSolution(gridId) {
-  const r = await fetch(`/api/solve?gridId=${encodeURIComponent(gridId)}`);
+  const r = await fetch(`${API_BASE}/api/solve?gridId=${encodeURIComponent(gridId)}`);
   return json(r);
 }
 
 export async function fetchBots(gridId) {
-  const r = await fetch(`/api/bots?gridId=${encodeURIComponent(gridId)}`);
+  const r = await fetch(`${API_BASE}/api/bots?gridId=${encodeURIComponent(gridId)}`);
   return json(r);
 }
 
 export async function fetchHint(gridId) {
-  const r = await fetch("/api/hint", {
+  const r = await fetch(`${API_BASE}/api/hint`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ gridId }),

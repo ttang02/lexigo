@@ -1,0 +1,21 @@
+# Render Blueprint — deploys the Lexigo API server (free tier).
+# The React client deploys separately to Cloudflare Pages.
+#
+# After first deploy, set CORS_ORIGIN in the Render dashboard to your Pages URL
+# (e.g. https://lexigo.pages.dev) and update client/.env.production's
+# VITE_API_URL to this service's URL.
+services:
+  - type: web
+    name: lexigo-server
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    # node:sqlite needs the experimental flag on Node 22.x (no-op on Node 24+).
+    startCommand: node --experimental-sqlite src/index.js
+    healthCheckPath: /api/grid
+    envVars:
+      - key: NODE_VERSION
+        value: 22.11.0
+      - key: CORS_ORIGIN
+        sync: false
