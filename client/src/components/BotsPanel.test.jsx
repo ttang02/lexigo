@@ -27,9 +27,10 @@ describe("BotsPanel", () => {
   it("counts only words found before the elapsed time", () => {
     render(<BotsPanel bots={BOTS} elapsedMs={1500} />);
     // Alpha found CHAT (9) at 1000ms but not PORTE (5000ms); Beta found nothing yet.
+    // BotsPanel shows score + word count (not the word itself).
     expect(screen.getByText("9")).toBeInTheDocument();
     expect(screen.getByText("0")).toBeInTheDocument();
-    expect(screen.getByText("CHAT")).toBeInTheDocument();
+    expect(screen.getByText("1 mot")).toBeInTheDocument();
   });
 
   it("accumulates score as time passes", () => {
