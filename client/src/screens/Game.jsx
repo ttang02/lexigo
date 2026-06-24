@@ -64,6 +64,24 @@ export function Game({ onEnd, mode = "normal", onMenu, overrideGrid = null, mult
 
   useEffect(() => () => { flashTimersRef.current.forEach(clearTimeout); }, []);
 
+  // 1v1: start the clock as soon as the shared grid is ready, so both players
+  // begin at the same moment (not on first tap).
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (multiRoomCode && grid && !autoStartedRef.current) {
+      autoStartedRef.current = true;
+      start();
+    }
+  }, [multiRoomCode, grid, start]);
+
+  // 1v1: broadcast our running total whenever it changes (incl. initial 0) so
+  // the opponent's banner always stays in sync, even if a submit-time push is lost.
+  useEffect(() => {
+    if (multiRoomCode && multiPlayerId) {
+      pushRoomScore({ code: multiRoomCode, playerId: multiPlayerId, score: total }).catch(() => {});
+    }
+  }, [total, multiRoomCode, multiPlayerId]);
+
   const handleTap = useCallback((i) => {
     if (!running) start();
     playClick();
@@ -89,10 +107,6 @@ export function Game({ onEnd, mode = "normal", onMenu, overrideGrid = null, mult
         setFlashPath([...path]);
         setFloatingScore(r.score);
         setScoreKey((k) => k + 1);
-        // 1v1: push the new running total so the opponent sees it live.
-        if (multiRoomCode && multiPlayerId) {
-          pushRoomScore({ code: multiRoomCode, playerId: multiPlayerId, score: total + r.score }).catch(() => {});
-        }
         flashTimersRef.current.forEach(clearTimeout);
         flashTimersRef.current = [
           setTimeout(() => setFlashPath([]), 500),
@@ -109,7 +123,7 @@ export function Game({ onEnd, mode = "normal", onMenu, overrideGrid = null, mult
       submittingRef.current = false;
       reset();
     }
-  }, [grid, path, words, reset, total, multiRoomCode, multiPlayerId]);
+  }, [grid, path, words, reset]);
 
   const useHint = useCallback(async () => {
     if (!grid || hinting || hintCooldown) return;

@@ -80,7 +80,8 @@ export function MultiScreen({ onMenu }) {
       const r = await API("/api/rooms/join", { code, pseudo: pseudo || "Joueur" });
       if (r.code === "ROOM_ERROR") { setError("Room introuvable ou pleine."); return; }
       setRoomInfo({ code: r.code, gridId: r.gridId, cells: r.cells, playerId: r.playerId });
-      setPhase("playing");
+      // Both players wait, then start together when the room hits 2 players.
+      setPhase("waiting");
     } catch { setError("Room introuvable ou pleine."); }
   }
 
