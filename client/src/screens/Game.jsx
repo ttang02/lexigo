@@ -6,14 +6,14 @@ import { WordList } from "../components/WordList.jsx";
 import { FloatingScore } from "../components/FloatingScore.jsx";
 import { usePathSelection } from "../hooks/usePathSelection.js";
 import { useTimer } from "../hooks/useTimer.js";
-import { fetchGrid, fetchDailyGrid, validateWord, fetchBots, fetchHint } from "../api.js";
+import { fetchGrid, fetchDailyGrid, validateWord, fetchBots, fetchHint, pushRoomScore } from "../api.js";
 import { BonusLegend } from "../components/BonusLegend.jsx";
 import { BotsPanel } from "../components/BotsPanel.jsx";
 import { playClick, playValid, playError } from "../utils/sound.js";
 
 const DURATIONS = { normal: 120_000, bombe: 60_000, daily: 120_000 };
 
-export function Game({ onEnd, mode = "normal", onMenu }) {
+export function Game({ onEnd, mode = "normal", onMenu, overrideGrid = null, multiRoomCode = null, multiPlayerId = null }) {
   const DURATION = DURATIONS[mode] ?? DURATIONS.normal;
   const isBombe = mode === "bombe";
   const isDaily = mode === "daily";
@@ -48,6 +48,11 @@ export function Game({ onEnd, mode = "normal", onMenu }) {
     setGrid(null);
     setGridError(null);
     setBots([]);
+    // 1v1: use the shared room grid instead of fetching a private one.
+    if (overrideGrid) {
+      setGrid(overrideGrid);
+      return;
+    }
     const gridFetch = isDaily ? fetchDailyGrid() : fetchGrid();
     gridFetch
       .then((g) => {
@@ -55,7 +60,7 @@ export function Game({ onEnd, mode = "normal", onMenu }) {
         fetchBots(g.gridId).then((r) => setBots(r.bots)).catch(() => {});
       })
       .catch(() => setGridError(true));
-  }, [retryCount]);
+  }, [retryCount, overrideGrid?.gridId]);
 
   useEffect(() => () => { flashTimersRef.current.forEach(clearTimeout); }, []);
 
@@ -84,6 +89,10 @@ export function Game({ onEnd, mode = "normal", onMenu }) {
         setFlashPath([...path]);
         setFloatingScore(r.score);
         setScoreKey((k) => k + 1);
+        // 1v1: push the new running total so the opponent sees it live.
+        if (multiRoomCode && multiPlayerId) {
+          pushRoomScore({ code: multiRoomCode, playerId: multiPlayerId, score: total + r.score }).catch(() => {});
+        }
         flashTimersRef.current.forEach(clearTimeout);
         flashTimersRef.current = [
           setTimeout(() => setFlashPath([]), 500),
@@ -100,7 +109,7 @@ export function Game({ onEnd, mode = "normal", onMenu }) {
       submittingRef.current = false;
       reset();
     }
-  }, [grid, path, words, reset]);
+  }, [grid, path, words, reset, total, multiRoomCode, multiPlayerId]);
 
   const useHint = useCallback(async () => {
     if (!grid || hinting || hintCooldown) return;

@@ -58,3 +58,13 @@ export async function fetchHint(gridId) {
   });
   return json(r);
 }
+
+export async function pushRoomScore({ code, playerId, score }) {
+  // 1v1: report running total so the server broadcasts it to the opponent (SSE).
+  const r = await fetch(`${API_BASE}/api/rooms/${code}/score`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ playerId, score }),
+  });
+  return json(r);
+}
