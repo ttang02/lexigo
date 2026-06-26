@@ -12,16 +12,18 @@ The deployment is a single Cloudflare Worker with static assets. Wrangler
 builds the React client, serves `client/dist` through the Worker assets binding,
 and dispatches `/api/*` requests to the Worker API.
 
-The Worker uses three Cloudflare services:
+The Worker uses four Cloudflare services:
 
 - **D1** stores leaderboard entries and replaces `scores.sqlite`.
-- **Durable Objects** own all short-lived, mutable game state. Each game grid
-  and each 1v1 room is routed to one authoritative object instance.
+- **Durable Objects** own all short-lived, mutable game state. Each game grid,
+  each 1v1 room, and the live leaderboard channel is routed to an authoritative
+  object instance.
+- **R2** stores the private French dictionary object outside the Git repository.
 - **WebSockets** provide live leaderboard and room updates. They replace the
   existing Server-Sent Events endpoints because Durable Objects can own and
   broadcast persistent WebSocket connections safely.
 
-The dictionary is bundled as a static text module and parsed into the existing
+The dictionary is stored as a private R2 object and parsed into the existing
 Trie implementation inside Worker isolates. The Worker runtime has no file
 system access, no Express, and no `node:sqlite` dependency.
 
@@ -51,8 +53,8 @@ client hook keeps its reconnect behaviour and callback contract while using
 - `worker/` contains the Worker entry point, routing, Durable Object classes,
   D1 repository, and Cloudflare runtime tests.
 - `migrations/` contains the D1 schema for scores and its supporting index.
-- `wrangler.jsonc` defines Worker assets, D1 binding, Durable Object binding,
-  migrations, and local development settings.
+- `wrangler.jsonc` defines Worker assets, D1 binding, R2 binding, Durable Object
+  bindings, migrations, and local development settings.
 - Root package scripts build the client before Wrangler commands and expose
   local development, database migration, and deploy commands.
 - Existing Node server code remains available for local legacy development only
@@ -89,14 +91,16 @@ The README will document the exact commands:
 pnpm install
 pnpm run cf:login
 pnpm run cf:d1:create
-# Copy the returned database_id into wrangler.jsonc.
+pnpm run cf:r2:create
+# Copy the returned D1 database_id into the uncommitted local Wrangler config.
+pnpm run cf:dictionary:upload
 pnpm run cf:db:migrate:remote
 pnpm run deploy
 ```
 
-The user supplies their Cloudflare account authentication and the D1 database
-identifier. No secret, API token, account identifier, or generated Wrangler
-configuration is committed.
+The user supplies their Cloudflare account authentication, D1 database
+identifier, and R2 bucket creation. No secret, API token, account identifier,
+or generated Wrangler configuration is committed.
 
 ## Scope Boundaries
 
