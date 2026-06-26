@@ -1,0 +1,58 @@
+{
+  // Cloudflare Worker configuration for Lexigo
+  // See https://developers.cloudflare.com/workers/wrangler/configuration/
+  "name": "lexigo",
+  "main": "worker/src/index.js",
+  "compatibility_date": "2025-06-01",
+
+  // Serve the built client as static assets
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./client/dist"
+  },
+
+  // D1 database for scores — replace database_id with your real D1 database ID
+  // (run: pnpm exec wrangler d1 create lexigo-scores)
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lexigo-scores",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // R2 bucket for the dictionary file
+  "r2_buckets": [
+    {
+      "binding": "DICTIONARY",
+      "bucket_name": "lexigo-dictionary"
+    }
+  ],
+
+  // Durable Objects for game rooms and leaderboard state
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "GAME",
+        "class_name": "GameRoom"
+      },
+      {
+        "name": "ROOM",
+        "class_name": "Room"
+      },
+      {
+        "name": "LEADERBOARD",
+        "class_name": "Leaderboard"
+      }
+    ]
+  },
+
+  // Durable Object migrations — required when declaring new DO classes
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["GameRoom", "Room", "Leaderboard"]
+    }
+  ]
+}
