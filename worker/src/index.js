@@ -6,6 +6,8 @@
  * Tasks 3–5 will replace these stubs with real game/room/leaderboard logic.
  */
 
+import { GameRoom } from "./game-room.js";
+
 export default {
   async fetch(request, env) {
     // Fall through to the static client assets.
@@ -14,19 +16,9 @@ export default {
   },
 };
 
-/**
- * Stub: single-player game session (1vBot / solo).
- * TODO (Task 3): implement full game state machine.
- */
-export class GameRoom {
-  constructor(state, env) {
-    this.state = state;
-    this.env = env;
-  }
-  async fetch(_request) {
-    return new Response("GameRoom not yet implemented", { status: 501 });
-  }
-}
+// The authoritative single-grid game Durable Object (Task 3) lives in
+// game-room.js; wrangler requires the DO class exported from the main module.
+export { GameRoom };
 
 /**
  * Stub: multiplayer room coordinating 1v1 matches.

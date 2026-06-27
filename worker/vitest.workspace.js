@@ -22,7 +22,7 @@ export default defineWorkspace([
   defineWorkersProject({
     test: {
       name: "workers-tests",
-      include: ["tests/scores.test.js"],
+      include: ["tests/scores.test.js", "tests/game-room.test.js"],
       pool: "@cloudflare/vitest-pool-workers",
       poolOptions: {
         workers: {
@@ -31,7 +31,7 @@ export default defineWorkspace([
           singleWorker: true,
         },
       },
-      globalSetup: ["./tests/setup-d1.js"],
+      globalSetup: ["./tests/setup-d1.js", "./tests/setup-game.js"],
     },
   }),
 ]);
