@@ -22,7 +22,12 @@ export default defineWorkspace([
   defineWorkersProject({
     test: {
       name: "workers-tests",
-      include: ["tests/scores.test.js", "tests/game-room.test.js"],
+      include: [
+        "tests/scores.test.js",
+        "tests/game-room.test.js",
+        "tests/room.test.js",
+        "tests/leaderboard.test.js",
+      ],
       pool: "@cloudflare/vitest-pool-workers",
       poolOptions: {
         workers: {

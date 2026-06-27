@@ -7,6 +7,8 @@
  */
 
 import { GameRoom } from "./game-room.js";
+import { Room } from "./room.js";
+import { Leaderboard } from "./leaderboard.js";
 
 export default {
   async fetch(request, env) {
@@ -16,34 +18,7 @@ export default {
   },
 };
 
-// The authoritative single-grid game Durable Object (Task 3) lives in
-// game-room.js; wrangler requires the DO class exported from the main module.
-export { GameRoom };
-
-/**
- * Stub: multiplayer room coordinating 1v1 matches.
- * TODO (Task 4): implement room lifecycle and matchmaking.
- */
-export class Room {
-  constructor(state, env) {
-    this.state = state;
-    this.env = env;
-  }
-  async fetch(_request) {
-    return new Response("Room not yet implemented", { status: 501 });
-  }
-}
-
-/**
- * Stub: per-mode leaderboard backed by D1.
- * TODO (Task 5): implement score reads/writes via env.DB.
- */
-export class Leaderboard {
-  constructor(state, env) {
-    this.state = state;
-    this.env = env;
-  }
-  async fetch(_request) {
-    return new Response("Leaderboard not yet implemented", { status: 501 });
-  }
-}
+// Wrangler requires every Durable Object class to be exported from the main
+// module. GameRoom (Task 3) is the authoritative single-grid game; Room and
+// Leaderboard (Task 4) are the live 1v1-room and per-mode leaderboard DOs.
+export { GameRoom, Room, Leaderboard };
