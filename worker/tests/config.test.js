@@ -27,7 +27,9 @@ describe("wrangler.jsonc bindings", () => {
 
     // D1 database binding named DB
     const d1 = config.d1_databases ?? [];
-    expect(d1.some((b) => b.binding === "DB")).toBe(true);
+    const db = d1.find((b) => b.binding === "DB");
+    expect(db).toBeTruthy();
+    expect(db.database_id).toBe("REPLACE_WITH_YOUR_D1_DATABASE_ID");
 
     // R2 bucket binding named DICTIONARY
     const r2 = config.r2_buckets ?? [];

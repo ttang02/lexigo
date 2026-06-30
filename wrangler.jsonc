@@ -11,8 +11,9 @@
     "directory": "./client/dist"
   },
 
-  // D1 database for scores — replace database_id with your real D1 database ID
-  // (run: pnpm exec wrangler d1 create lexigo-scores)
+  // D1 database for scores.
+  // Keep the real database_id out of Git; pnpm run cf:prepare injects it from
+  // CLOUDFLARE_D1_DATABASE_ID into the ignored wrangler.deploy.jsonc file.
   "d1_databases": [
     {
       "binding": "DB",
@@ -48,7 +49,7 @@
     ]
   },
 
-  // Durable Object migrations — required when declaring new DO classes
+  // SQLite Durable Object migrations are required on the Cloudflare Free plan.
   "migrations": [
     {
       "tag": "v1",
