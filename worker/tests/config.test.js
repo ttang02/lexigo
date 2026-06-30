@@ -39,5 +39,13 @@ describe("wrangler.jsonc bindings", () => {
     expect(doNames).toContain("GAME");
     expect(doNames).toContain("ROOM");
     expect(doNames).toContain("LEADERBOARD");
+
+    const migrations = config.migrations ?? [];
+    expect(migrations.some((m) =>
+      Array.isArray(m.new_sqlite_classes) &&
+      m.new_sqlite_classes.includes("GameRoom") &&
+      m.new_sqlite_classes.includes("Room") &&
+      m.new_sqlite_classes.includes("Leaderboard")
+    )).toBe(true);
   });
 });
