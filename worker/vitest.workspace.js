@@ -14,7 +14,7 @@ export default defineWorkspace([
     test: {
       name: "node-tests",
       environment: "node",
-      include: ["tests/config.test.js"],
+      include: ["tests/config.test.js", "tests/cloudflare-config.test.js"],
     },
   },
 

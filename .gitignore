@@ -8,3 +8,5 @@ server/data/scores.sqlite
 .claude/worktrees/
 .superpowers/
 .claire/
+.wrangler/
+wrangler.deploy.jsonc

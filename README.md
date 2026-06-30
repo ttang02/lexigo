@@ -149,10 +149,11 @@ pnpm install
 # 2. Connexion à Cloudflare (ouvre le navigateur)
 pnpm run cf:login
 
-# 3. Créer la base D1 — copie le database_id renvoyé dans wrangler.jsonc.
-#    Ne committe PAS ton vrai database_id : remplace le placeholder
-#    REPLACE_WITH_YOUR_D1_DATABASE_ID localement seulement.
+# 3. Créer ou retrouver la base D1 et son database_id.
+#    Ne committe PAS ton vrai database_id.
+#    Configure ensuite CLOUDFLARE_D1_DATABASE_ID, pas wrangler.jsonc.
 pnpm run cf:d1:create
+pnpm run cf:d1:list
 
 # 4. Créer le bucket R2 du dictionnaire
 pnpm run cf:r2:create
@@ -166,6 +167,12 @@ pnpm run cf:db:migrate:remote
 # 7. Build du client + déploiement du Worker
 pnpm run deploy
 ```
+
+`wrangler.jsonc` garde volontairement le placeholder
+`REPLACE_WITH_YOUR_D1_DATABASE_ID`. `pnpm run cf:prepare` genere
+`wrangler.deploy.jsonc` avec `CLOUDFLARE_D1_DATABASE_ID`; si la
+variable manque, le deploy s'arrete avant l'appel API Cloudflare avec un message
+clair au lieu de l'erreur `binding DB of type d1 must have a valid database_id`.
 
 > Les bindings (`ASSETS`, `DB`, `DICTIONARY`, `GAME`, `ROOM`, `LEADERBOARD`) sont
 > déclarés dans `wrangler.jsonc`. `pnpm --filter worker build` lance un
