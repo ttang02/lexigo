@@ -1,3 +1,4 @@
+/* global localStorage */
 const KEY = "lexigo-streak";
 
 function today() {

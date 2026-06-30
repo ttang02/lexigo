@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+/* global WebSocket */
 
 // Live updates over a WebSocket Durable Object (Cloudflare). Despite the legacy
 // filename/export, this is no longer EventSource — it opens a WebSocket and

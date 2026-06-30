@@ -106,6 +106,8 @@ export class Room {
 
     try {
       switch (path) {
+        case "/state":
+          return this._opState();
         case "/create":
           return this._opCreate(request, body);
         case "/join":
@@ -118,7 +120,6 @@ export class Room {
           return err("unknown operation", "UNKNOWN_OP", 404);
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error(e);
       return json({ error: "internal error", code: "INTERNAL" }, 500);
     }
@@ -128,6 +129,14 @@ export class Room {
   // persisted state and publicState carry it. Fall back to a path-derived value.
   _code(request) {
     return request.headers.get("x-room-code") || "ROOM";
+  }
+
+  // GET|POST /state — read the current publicState WITHOUT mutating.
+  // Used by GET /api/rooms/:code and the live-upgrade existence check.
+  // A missing/expired room yields { state: null } so the router can 404.
+  async _opState() {
+    const room = await this._room();
+    return json({ state: room ? this._publicState(room) : null });
   }
 
   // POST /create — (re)initialise this room at a gridId.
@@ -197,7 +206,7 @@ export class Room {
   // Live sockets are receive-only; ignore inbound frames.
   webSocketMessage() {}
 
-  webSocketClose(ws, code, reason, wasClean) {
+  webSocketClose(ws, code, reason, _wasClean) {
     try {
       ws.close(code, reason);
     } catch {

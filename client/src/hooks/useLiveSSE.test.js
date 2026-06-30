@@ -81,7 +81,7 @@ describe("useLiveSSE (WebSocket)", () => {
 
   it("reconnects with 1→2→4→…→10s backoff on error", () => {
     renderHook(() => useLiveSSE("http://api.test/live", () => {}));
-    const setTimeoutSpy = vi.spyOn(global, "setTimeout");
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
 
     // First error → retry scheduled at 1000ms.
     act(() => last().emitError());
@@ -111,7 +111,7 @@ describe("useLiveSSE (WebSocket)", () => {
 
   it("resets backoff to 1s after a successful open", () => {
     renderHook(() => useLiveSSE("http://api.test/live", () => {}));
-    const setTimeoutSpy = vi.spyOn(global, "setTimeout");
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
 
     act(() => last().emitError());
     expect(setTimeoutSpy).toHaveBeenLastCalledWith(expect.any(Function), 1000);

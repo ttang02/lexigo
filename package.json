@@ -6,7 +6,13 @@
     "dev": "concurrently -n server,client -c blue,green \"pnpm --filter server dev\" \"pnpm --filter client dev\"",
     "build": "pnpm --filter client build",
     "test": "pnpm -r test",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "deploy": "pnpm run build && pnpm --filter worker exec wrangler deploy",
+    "cf:login": "pnpm --filter worker exec wrangler login",
+    "cf:d1:create": "pnpm --filter worker exec wrangler d1 create lexigo-scores",
+    "cf:r2:create": "pnpm --filter worker exec wrangler r2 bucket create lexigo-dictionary",
+    "cf:dictionary:upload": "pnpm --filter worker exec wrangler r2 object put lexigo-dictionary/dict.txt --file ../server/data/dict.txt --remote",
+    "cf:db:migrate:remote": "pnpm --filter worker exec wrangler d1 migrations apply DB --remote"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

@@ -108,6 +108,10 @@ export class GameRoom {
           return this._opGrid(request);
         case "/daily":
           return this._opDaily(request, url, body);
+        case "/total":
+          return this._opTotal();
+        case "/cells":
+          return this._opCells(request);
         case "/validate":
           return this._opValidate(body);
         case "/hint":
@@ -121,7 +125,6 @@ export class GameRoom {
       }
     } catch (e) {
       // Mirror the Express error handler's shape.
-      // eslint-disable-next-line no-console
       console.error(e);
       return json({ error: "internal error", code: "INTERNAL" }, 500);
     }
@@ -150,6 +153,23 @@ export class GameRoom {
       await this._put(entry);
     }
     return json({ gridId, cells: entry.cells, daily: true, date });
+  }
+
+  // POST /total — read the authoritative session total WITHOUT mutating.
+  // Used by the score-submission route. Absent/expired entry → SESSION_MISSING.
+  async _opTotal() {
+    const entry = await this._entry();
+    if (!entry) return err("no active play session for grid", "SESSION_MISSING");
+    return json({ total: entry.total });
+  }
+
+  // POST /cells — return this grid's cells from storage WITHOUT mutating.
+  // Used to hand a room's grid to clients. Absent/expired → GRID_MISSING.
+  async _opCells(request) {
+    const entry = await this._entry();
+    if (!entry) return err("grid expired or unknown", "GRID_MISSING");
+    const gridId = request.headers.get("x-grid-id") || null;
+    return json({ gridId, cells: entry.cells });
   }
 
   // POST /validate — server-authoritative scoring with per-grid dedup.

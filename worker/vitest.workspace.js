@@ -27,6 +27,7 @@ export default defineWorkspace([
         "tests/game-room.test.js",
         "tests/room.test.js",
         "tests/leaderboard.test.js",
+        "tests/index.test.js",
       ],
       pool: "@cloudflare/vitest-pool-workers",
       poolOptions: {

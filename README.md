@@ -134,6 +134,43 @@ NODE_ENV=production pnpm --filter server start
 
 Le client buildé (`client/dist`) peut être servi par n'importe quel host statique (Nginx, Caddy, Vercel, Netlify…) en pointant `/api/*` vers le serveur Node.
 
+## Déploiement sur Cloudflare Workers
+
+Lexigo tourne aussi entièrement sur Cloudflare : un Worker sert le client (`client/dist`)
+et l'API `/api/*`. Les scores persistent dans **D1**, le dictionnaire privé vit dans **R2**,
+et l'état éphémère des parties / rooms 1v1 / leaderboard live est porté par des
+**Durable Objects** (WebSockets). La configuration est dans `wrangler.jsonc` (aucun
+identifiant de compte ni secret n'y est committé).
+
+```bash
+# 1. Dépendances
+pnpm install
+
+# 2. Connexion à Cloudflare (ouvre le navigateur)
+pnpm run cf:login
+
+# 3. Créer la base D1 — copie le database_id renvoyé dans wrangler.jsonc.
+#    Ne committe PAS ton vrai database_id : remplace le placeholder
+#    REPLACE_WITH_YOUR_D1_DATABASE_ID localement seulement.
+pnpm run cf:d1:create
+
+# 4. Créer le bucket R2 du dictionnaire
+pnpm run cf:r2:create
+
+# 5. Téléverser le dictionnaire dans R2 (sous la clé dict.txt)
+pnpm run cf:dictionary:upload
+
+# 6. Appliquer les migrations D1 sur la base distante (crée la table scores)
+pnpm run cf:db:migrate:remote
+
+# 7. Build du client + déploiement du Worker
+pnpm run deploy
+```
+
+> Les bindings (`ASSETS`, `DB`, `DICTIONARY`, `GAME`, `ROOM`, `LEADERBOARD`) sont
+> déclarés dans `wrangler.jsonc`. `pnpm --filter worker build` lance un
+> `wrangler deploy --dry-run` pour valider la config sans déployer.
+
 ## API
 
 | Méthode | Chemin | Description |
