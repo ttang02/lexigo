@@ -1,4 +1,6 @@
-import { randomUUID } from "node:crypto";
+// Use the Web Crypto global (available in Cloudflare Workers and modern Node)
+// instead of `node:crypto`, so this module works without Node compat mode.
+/* global crypto */
 
 const FRENCH_DIST = {
   A:9,B:2,C:2,D:3,E:15,F:2,G:2,H:2,I:8,J:1,K:1,L:5,M:3,
@@ -52,5 +54,5 @@ export function generateGrid({ seed } = {}) {
     cells[indices[k]].bonus = pickBonus(rng);
   }
 
-  return { gridId: randomUUID(), cells, seed: seed ?? null };
+  return { gridId: crypto.randomUUID(), cells, seed: seed ?? null };
 }

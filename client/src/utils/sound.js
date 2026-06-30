@@ -1,3 +1,4 @@
+/* global localStorage */
 // Web Audio API tones — no asset files needed. Muted state persists in localStorage.
 const MUTE_KEY = "lexigo-muted";
 let ctx = null;
