@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Leaderboard } from "../components/Leaderboard.jsx";
 import { useLiveSSE } from "../hooks/useLiveSSE.js";
+import { fetchLeaderboard } from "../api.js";
 import { API_BASE } from "../config.js";
 
 const MODES = [
@@ -12,6 +13,15 @@ const MODES = [
 export function LeaderboardScreen({ onMenu }) {
   const [mode, setMode] = useState("normal");
   const [rows, setRows] = useState([]);
+  // Initial load via REST so the ranking shows even when the live socket can't
+  // connect; the WebSocket below then keeps it updated in real time.
+  useEffect(() => {
+    let cancelled = false;
+    fetchLeaderboard(mode)
+      .then((data) => { if (!cancelled && Array.isArray(data)) setRows(data); })
+      .catch(() => { /* keep whatever the socket may deliver */ });
+    return () => { cancelled = true; };
+  }, [mode]);
   const live = useLiveSSE(`${API_BASE}/api/scores/live?mode=${mode}`, setRows);
 
   return (
