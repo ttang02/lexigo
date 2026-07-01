@@ -3,23 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "description": "Pure Lexigo game logic (grid, dictionary, validation, scoring, solver, bots) reused by the Cloudflare Worker. No longer a running server.",
   "scripts": {
-    "dev": "nodemon --watch src --watch data/dict.txt src/index.js",
-    "start": "node src/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src tests"
   },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^5.2.1"
-  },
   "devDependencies": {
     "@eslint/js": "^9.10.0",
     "eslint": "^9.10.0",
-    "nodemon": "^3.1.4",
-    "supertest": "^7.0.0",
     "vitest": "^2.1.0"
   }
 }
